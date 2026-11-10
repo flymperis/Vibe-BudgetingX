@@ -1,6 +1,7 @@
 """Core flows (old tests/test_core_flows.py): register, log out, the
-long-lived login cookie, and the expense add/edit/delete cycle. Income,
-accounts/categories and per-panel loading are PENDING with their routers."""
+long-lived login cookie, the expense and income add cycles, accounts and
+categories, and a "loads for a new user" check for the income, categories,
+accounts, transfers and recurring endpoints."""
 
 import re
 
@@ -97,7 +98,7 @@ def test_add_edit_delete_expense(client):
 
 def test_add_expense_with_chosen_date(client):
     """Old: test_add_expense_and_income_with_chosen_date (expense half; the
-    income half is PENDING with the income router)."""
+    income half is test_add_income_with_chosen_date)."""
     api = register_and_login(client, "hana")
     cat, _inc, acc = first_ids("hana")
     resp = api.post(
@@ -111,3 +112,74 @@ def test_add_expense_with_chosen_date(client):
     expense = conn.execute("SELECT spent_at FROM expenses WHERE notes = 'old lunch'").fetchone()
     conn.close()
     assert expense["spent_at"][:10] == "2026-03-14"
+
+
+def test_domain_a_endpoints_load_for_a_new_user(client):
+    """Old: test_dashboard_loads_every_panel (income, recurring, transfer and
+    the settings banks/expense/income category sections)."""
+    api = register_and_login(client, "carol")
+    for url in (
+        "/api/income",
+        "/api/categories",
+        "/api/income-categories",
+        "/api/accounts",
+        "/api/transfers",
+        "/api/recurring",
+    ):
+        resp = api.get(url)
+        assert resp.status_code == 200, f"{url} failed to load: {resp.text}"
+    assert api.get("/api/income").json()["items"] == []
+    assert [c["name"] for c in api.get("/api/categories").json()["items"]] == ["General", "Other"]
+    assert [c["name"] for c in api.get("/api/income-categories").json()["items"]] == ["General", "Other", "Salary"]
+    assert [a["name"] for a in api.get("/api/accounts").json()["items"]] == ["Main"]
+    assert api.get("/api/transfers").json()["items"] == []
+    assert api.get("/api/recurring").json()["items"] == []
+
+
+def test_add_income_entry(client):
+    api = register_and_login(client, "erin")
+    boot = api.get("/api/bootstrap").json()
+    category_id = boot["income_categories"][0]["id"]
+    account_id = boot["accounts"][0]["id"]
+
+    resp = api.post(
+        "/api/income",
+        json={"notes": "salary", "amount": "1500", "category_id": category_id, "account_id": account_id},
+    )
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    row = conn.execute("SELECT amount FROM income_entries WHERE notes = 'salary'").fetchone()
+    conn.close()
+    assert row is not None
+    assert row["amount"] == 1500.0
+    assert resp.json()["amount"] == 1500.0
+
+
+def test_add_income_with_chosen_date(client):
+    """Old: test_add_expense_and_income_with_chosen_date (income half)."""
+    api = register_and_login(client, "hana-income")
+    _cat, inc, acc = first_ids("hana-income")
+    resp = api.post(
+        "/api/income",
+        json={"notes": "old bonus", "amount": "12", "category_id": inc, "account_id": acc, "received_at": "2026-03-14"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["received_at"] == "2026-03-14"
+
+    conn = get_connection()
+    income = conn.execute("SELECT received_at FROM income_entries WHERE notes = 'old bonus'").fetchone()
+    conn.close()
+    assert income["received_at"][:10] == "2026-03-14"
+
+
+def test_add_account_and_category(client):
+    api = register_and_login(client, "frank")
+
+    resp = api.post("/api/accounts", json={"name": "Savings", "opening_balance": "100"})
+    assert resp.status_code == 200
+    assert "Savings" in [a["name"] for a in api.get("/api/accounts").json()["items"]]
+
+    resp = api.post("/api/categories", json={"name": "Groceries"})
+    assert resp.status_code == 200
+    assert "Groceries" in [c["name"] for c in api.get("/api/categories").json()["items"]]

@@ -1,8 +1,9 @@
 """Connection settings and locking (old tests/test_db_locking_and_category_delete.py).
 
-The category-delete tests of the old file are PENDING with the categories
-router; the connection, concurrency and leaked-transaction tests are here, plus
-a check that the API's per-request connection is always closed.
+Connection settings, concurrency and the leaked-transaction demonstration,
+deleting a category that is still referenced (refused with a 400 and the old
+message instead of a flash), plus a check that the API's per-request
+connection is always closed.
 """
 
 import sqlite3
@@ -170,3 +171,129 @@ def test_a_leaked_transaction_blocks_writers_in_every_journal_mode(tmp_path):
     assert results["WAL"] == "blocked", "WAL alone does not rescue a leaked transaction"
     assert results["DELETE-after-close"] == "unblocked"
     assert results["WAL-after-close"] == "unblocked"
+
+
+# --------------------------------------------------------------------------
+# 2. Deleting a category that is still referenced
+# --------------------------------------------------------------------------
+
+
+def _ids(username):
+    conn = get_connection()
+    uid = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
+    cat = conn.execute("SELECT id, name FROM categories WHERE user_id = ? ORDER BY id LIMIT 1", (uid,)).fetchone()
+    inc = conn.execute(
+        "SELECT id, name FROM income_categories WHERE user_id = ? ORDER BY id LIMIT 1",
+        (uid,),
+    ).fetchone()
+    acc = conn.execute("SELECT id FROM accounts WHERE user_id = ? ORDER BY id LIMIT 1", (uid,)).fetchone()["id"]
+    conn.close()
+    return uid, cat, inc, acc
+
+
+def test_deleting_category_with_expenses_is_refused_not_a_500(client):
+    api = register_and_login(client, "lock-delete-expense")
+    uid, cat, _inc, acc = _ids("lock-delete-expense")
+
+    resp = api.post(
+        "/api/expenses",
+        json={"notes": "coffee", "amount": "-4.20", "category_id": cat["id"], "account_id": acc},
+    )
+    assert resp.status_code == 200
+
+    resp = api.delete(f"/api/categories/{cat['id']}")
+    assert resp.status_code == 400, "must not 500"  # old: 200 page with a flash-error
+    detail = resp.json()["detail"]
+    assert "still has" in detail and "1 expense" in detail
+    assert detail == f"“{cat['name']}” still has 1 expense. Reassign or delete it first."
+
+    # and the category survives
+    conn = get_connection()
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM categories WHERE id = ?", (cat["id"],)).fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_deleting_income_category_with_entries_is_refused(client):
+    api = register_and_login(client, "lock-delete-income")
+    uid, _cat, inc, acc = _ids("lock-delete-income")
+
+    api.post(
+        "/api/income",
+        json={"notes": "salary", "amount": "1200", "category_id": inc["id"], "account_id": acc},
+    )
+
+    resp = api.delete(f"/api/income-categories/{inc['id']}")
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert "still has" in detail and "1 income entry" in detail
+    # never the naive plural
+    assert "income entrys" not in detail
+
+
+def test_unused_category_still_deletes(client):
+    """The guard must not block the normal case."""
+    api = register_and_login(client, "lock-delete-ok")
+
+    api.post("/api/categories", json={"name": "Disposable"})
+    conn = get_connection()
+    row = conn.execute("SELECT id FROM categories WHERE name = 'Disposable'").fetchone()
+    conn.close()
+    assert row is not None
+
+    resp = api.delete(f"/api/categories/{row['id']}")
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM categories WHERE id = ?", (row["id"],)).fetchone()[0] == 0
+    finally:
+        conn.close()
+
+
+def test_recurring_rule_blocks_delete_even_though_it_has_no_foreign_key(client):
+    """recurring_entries.category_id has no FK, so this would not raise — the
+    rows would just be silently orphaned. Blocked deliberately."""
+    api = register_and_login(client, "lock-delete-recurring")
+    uid, cat, _inc, acc = _ids("lock-delete-recurring")
+
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO recurring_entries"
+        " (user_id, entry_type, amount, category_id, account_id, day_of_month, notes, enabled)"
+        " VALUES (?, 'expense', 50.0, ?, ?, 1, '', 1)",
+        (uid, cat["id"], acc),
+    )
+    conn.commit()
+    conn.close()
+
+    resp = api.delete(f"/api/categories/{cat['id']}")
+    assert resp.status_code == 400
+    assert "1 recurring rule" in resp.json()["detail"]
+
+
+def test_refused_delete_does_not_leave_the_database_locked(client):
+    """The regression that matters: after a refused delete, the next write must
+    still go through. Before the fix this raised OperationalError."""
+    api = register_and_login(client, "lock-no-leak")
+    uid, cat, _inc, acc = _ids("lock-no-leak")
+
+    api.post("/api/expenses", json={"notes": "x", "amount": "-1", "category_id": cat["id"], "account_id": acc})
+    assert api.delete(f"/api/categories/{cat['id']}").status_code == 400
+
+    # the write that used to fail with "database is locked"
+    resp = api.post("/api/categories", json={"name": "AfterRefusal"})
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    try:
+        assert (
+            conn.execute(
+                "SELECT COUNT(*) FROM categories WHERE name = 'AfterRefusal' AND user_id = ?",
+                (uid,),
+            ).fetchone()[0]
+            == 1
+        )
+    finally:
+        conn.close()
