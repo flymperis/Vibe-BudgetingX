@@ -37,8 +37,8 @@ def test_tag_numbers_are_not_amounts():
 
 def test_tag_totals_add_up_across_categories(client):
     """Old: test_web_tag_report_adds_up_across_categories — the tags.detail /
-    tags.summary maths and the tag list bootstrap hands to the notes fields.
-    The rendered report (HTML) part is PENDING with the reports router."""
+    tags.summary maths, the tag list bootstrap hands to the notes fields, and
+    the tag report (GET /api/reports/tags) instead of the rendered HTML."""
     api = register_and_login(client, "tag_web")
     uid = user_id("tag_web")
     conn = get_connection()
@@ -91,6 +91,33 @@ def test_tag_totals_add_up_across_categories(client):
     expected_chips = tags.chip_tags(tags.summary(conn, uid), date.today())
     conn.close()
     assert boot["recent_tags"] == expected_chips  # [] today: July is too long ago for chips
+
+    # The tags report: every tag with its totals (old tag table) ...
+    report = api.get("/api/reports/tags").json()
+    assert report["selected_tag"] is None and report["tag"] is None
+    listed = {t["key"]: t for t in report["tags"]}
+    assert listed["trip2026"]["tag"].lower() == "trip2026"
+    assert (listed["trip2026"]["spent"], listed["trip2026"]["income"], listed["trip2026"]["count"]) == (425.5, 20.0, 4)
+    assert (listed["trip2026"]["first"], listed["trip2026"]["last"]) == ("2026-07-01", "2026-07-10")
+    assert listed["friends"]["count"] == 1
+    # ... and one tag: totals, spending by category and every entry.
+    one = api.get("/api/reports/tags", params={"tag": " TRIP2026 "}).json()
+    assert one["selected_tag"] == "TRIP2026"
+    tag = one["tag"]
+    assert (tag["spent"], tag["income"], tag["net"], tag["count"]) == (425.5, 20.0, -405.5, 4)
+    assert [(c["name"], c["total"]) for c in tag["categories"]] == [("Hotel", 300.0), ("General", 125.5)]
+    assert round(tag["categories"][0]["share"], 1) == 70.5
+    assert [r["notes"] for r in tag["rows"]] == [
+        "refund #trip2026",
+        "dinner #trip2026 #friends",
+        "hotel #TRIP2026",
+        "ferry #Trip2026",
+    ]
+    assert tag["rows"][0]["kind"] == "income" and tag["rows"][0]["account"] == "Main"
+    assert {r["category"] for r in tag["rows"]} >= {"Hotel", "General"}
+    # a tag nothing carries: no detail, the list is still there
+    none = api.get("/api/reports/tags", params={"tag": "nothing"}).json()
+    assert none["selected_tag"] == "nothing" and none["tag"] is None and none["tags"]
 
 
 def test_chips_offer_only_a_few_recently_used_tags():
