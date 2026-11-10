@@ -1,4 +1,9 @@
 import type { MessageKey } from './el'
+import { moneyEn } from './features/money'
+import { manageEn } from './features/manage'
+import { planningEn } from './features/planning'
+import { sharedEn } from './features/shared'
+import { insightsEn } from './features/insights'
 
 export const en: Record<MessageKey, string> = {
   'app.name': 'Vibe Budgeting',
@@ -150,4 +155,9 @@ export const en: Record<MessageKey, string> = {
 
   'dev.title': 'Components',
   'dev.subtitle': 'Every building block with sample data.',
+  ...moneyEn,
+  ...manageEn,
+  ...planningEn,
+  ...sharedEn,
+  ...insightsEn,
 }

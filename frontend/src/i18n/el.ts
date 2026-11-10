@@ -3,6 +3,12 @@
  * Keys are `<area>.<name>`; feature-specific strings use the feature name as the
  * area (e.g. `expenses.addTitle`). Placeholders use {name}.
  */
+import { moneyEl } from './features/money'
+import { manageEl } from './features/manage'
+import { planningEl } from './features/planning'
+import { sharedEl } from './features/shared'
+import { insightsEl } from './features/insights'
+
 export const el = {
   'app.name': 'Vibe Budgeting',
   'app.shortName': 'Vibe',
@@ -166,6 +172,11 @@ export const el = {
   // Dev components page
   'dev.title': 'Components',
   'dev.subtitle': 'Όλα τα δομικά στοιχεία με δείγμα δεδομένων.',
+  ...moneyEl,
+  ...manageEl,
+  ...planningEl,
+  ...sharedEl,
+  ...insightsEl,
 } as const
 
 export type MessageKey = keyof typeof el
