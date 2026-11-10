@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="el" data-theme="zinc" data-mode="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Vibe Budgeting</title>
+    <meta name="description" content="Vibe Budgeting" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Vibe" />
+    <meta name="theme-color" content="#f4f4f5" />
+    <!--
+      Theme before first paint (no flash). Same storage keys and rules as
+      src/theme/theme.ts and src/i18n/index.ts; keep them in sync.
+    -->
+    <script>
+      ;(function () {
+        try {
+          var root = document.documentElement
+          var themes = ['zinc', 'blue', 'green', 'violet', 'rose']
+          var t = localStorage.getItem('vbx.theme')
+          var m = localStorage.getItem('vbx.mode')
+          var dark =
+            m === 'dark' || (m !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          root.setAttribute('data-theme', themes.indexOf(t) >= 0 ? t : 'zinc')
+          root.setAttribute('data-mode', dark ? 'dark' : 'light')
+          root.setAttribute('lang', localStorage.getItem('vbx.lang') === 'en' ? 'en' : 'el')
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute('content', dark ? '#09090b' : '#f4f4f5')
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <noscript>Vibe Budgeting needs JavaScript.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

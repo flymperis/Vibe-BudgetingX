@@ -1,0 +1,268 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter/wght.css';
+
+/*
+ * Theming
+ * -------
+ * <html data-theme="zinc|blue|green|violet|rose" data-mode="light|dark">
+ * Both attributes are set before first paint by the inline script in index.html
+ * and kept in sync by src/theme/theme.ts. Colours are hex so the same values
+ * can be copied into <meta name="theme-color">.
+ *
+ * Tailwind's `dark:` variant follows data-mode, not the OS setting.
+ */
+@custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
+
+@theme inline {
+  --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* App-specific semantic tokens */
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-hero: var(--hero);
+  --color-hero-foreground: var(--hero-foreground);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* light, zinc */
+  --background: #f4f4f5;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #dc2626;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a1a1aa;
+
+  /* Text-safe on white (>= 4.5:1). The sign is always printed as well. */
+  --positive: #15803d;
+  --negative: #dc2626;
+  --warning: #b45309;
+
+  --hero: #18181b;
+  --hero-foreground: #fafafa;
+
+  --chart-1: var(--primary);
+  --chart-2: #0ea5e9;
+  --chart-3: #f59e0b;
+  --chart-4: #10b981;
+  --chart-5: #f43f5e;
+
+  --sidebar: #fafafa;
+  --sidebar-foreground: #09090b;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: var(--ring);
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+
+  color-scheme: light;
+}
+
+[data-mode='dark'] {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #1c1c1f;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #232326;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #f87171;
+  --border: #27272a;
+  --input: #3f3f46;
+  --ring: #71717a;
+
+  --positive: #4ade80;
+  --negative: #f87171;
+  --warning: #fbbf24;
+
+  --hero: #27272a;
+  --hero-foreground: #fafafa;
+
+  --sidebar: #0f0f11;
+  --sidebar-foreground: #fafafa;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
+
+  --shadow-card: none;
+  color-scheme: dark;
+}
+
+/* Colour themes change the primary family only; zinc is the base above. */
+[data-theme='blue'] {
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --ring: #93c5fd;
+  --hero: #2563eb;
+  --hero-foreground: #ffffff;
+}
+[data-theme='blue'][data-mode='dark'] {
+  --primary: #3b82f6;
+  --ring: #1d4ed8;
+  --hero: #1e40af;
+}
+[data-theme='green'] {
+  --primary: #047857;
+  --primary-foreground: #ffffff;
+  --ring: #6ee7b7;
+  --hero: #047857;
+  --hero-foreground: #ffffff;
+}
+[data-theme='green'][data-mode='dark'] {
+  --primary: #10b981;
+  --primary-foreground: #022c22;
+  --ring: #047857;
+  --hero: #065f46;
+}
+[data-theme='violet'] {
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --ring: #c4b5fd;
+  --hero: #7c3aed;
+  --hero-foreground: #ffffff;
+}
+[data-theme='violet'][data-mode='dark'] {
+  --primary: #8b5cf6;
+  --ring: #6d28d9;
+  --hero: #5b21b6;
+}
+[data-theme='rose'] {
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --ring: #fda4af;
+  --hero: #e11d48;
+  --hero-foreground: #ffffff;
+}
+[data-theme='rose'][data-mode='dark'] {
+  --primary: #f43f5e;
+  --primary-foreground: #ffffff;
+  --ring: #be123c;
+  --hero: #9f1239;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    @apply font-sans antialiased;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100dvh;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Amount colours (same class names as the old app's amount_class filter). */
+  .amount-pos {
+    color: var(--positive);
+  }
+  .amount-neg {
+    color: var(--negative);
+  }
+  .amount-zero {
+    color: var(--muted-foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
