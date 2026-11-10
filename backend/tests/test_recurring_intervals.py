@@ -6,12 +6,15 @@ the month it was created and never on a date before its creation day. Rules
 made back then must keep doing exactly that after the migration.
 
 The old app posted due entries on every dashboard load (GET /); the API does
-it on GET /api/bootstrap. The two export/import tests are PENDING with the
-excel import/export domain.
+it on GET /api/bootstrap.
 """
 
 import calendar
-from datetime import date, timedelta
+import io
+from datetime import date, datetime, timedelta
+
+from fastapi.testclient import TestClient
+from openpyxl import load_workbook
 
 from vbx.core import db
 from vbx.core.finance import recurring_occurrences
@@ -421,3 +424,102 @@ def test_unchanged_first_date_keeps_a_day_past_the_month_end(client):
         start_date="2026-02-28",
     )
     assert _rule("end of month")["day_of_month"] == 31
+
+
+# --- export / import -------------------------------------------------------------
+
+XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+def _import(api, workbook_bytes):
+    return api.post(
+        "/api/import/excel",
+        files={"file": ("budget-export.xlsx", workbook_bytes, XLSX)},
+        data={"replace_movements": "1", "sync_opening_balances": "1"},
+    )
+
+
+def _expense_count(uid):
+    conn = get_connection()
+    n = conn.execute("SELECT COUNT(*) FROM expenses WHERE user_id = ?", (uid,)).fetchone()[0]
+    conn.close()
+    return n
+
+
+def test_interval_round_trips_through_export_and_import(client, app):
+    api = register_and_login(client, "rec-export-src")
+    src_uid, account_id, category_id = _ids_for("rec-export-src")
+    start = date.today() - timedelta(days=30)
+    _add_rule(
+        api,
+        category_id,
+        account_id,
+        "biweekly",
+        interval_unit="week",
+        interval_count="2",
+        start_date=start.isoformat(),
+        indefinitely="",
+        months_to_run="10",
+    )
+    _load(api)
+    src_rule = _rule("biweekly")
+    workbook_bytes = api.get("/api/export/excel").content
+
+    other = register_and_login(TestClient(app), "rec-export-dst")
+    dst_uid, _, _ = _ids_for("rec-export-dst")
+    resp = _import(other, workbook_bytes)
+    assert resp.status_code == 200, resp.text
+    conn = get_connection()
+    dst_rule = conn.execute(
+        "SELECT * FROM recurring_entries WHERE user_id = ? AND notes = 'biweekly'", (dst_uid,)
+    ).fetchone()
+    applied = sorted(
+        r["ym"] for r in conn.execute("SELECT ym FROM recurring_applied WHERE recurring_id = ?", (dst_rule["id"],))
+    )
+    conn.close()
+    for col in ("interval_unit", "interval_count", "start_date", "not_before", "months_to_run", "day_of_month"):
+        assert dst_rule[col] == src_rule[col], col
+    assert applied == _posted_dates(src_uid, "biweekly")  # weekly keys are full dates
+
+    count = _expense_count(dst_uid)
+    _load(other)
+    assert _expense_count(dst_uid) == count
+
+
+def test_workbook_without_interval_columns_imports_as_monthly(client, app):
+    api = register_and_login(client, "rec-v3-src")
+    _, account_id, category_id = _ids_for("rec-v3-src")
+    _add_rule(
+        api,
+        category_id,
+        account_id,
+        "v3 rent",
+        interval_unit="month",
+        interval_count="1",
+        start_date=_months_back(date.today(), 2, day=1).isoformat(),
+    )
+    _load(api)
+    wb = load_workbook(io.BytesIO(api.get("/api/export/excel").content))
+    ws = wb["Recurring"]
+    headers = [c.value for c in ws[1]]
+    first_new = headers.index("interval_unit") + 1
+    ws.delete_cols(first_new, len(headers) - first_new + 1)
+    # A v3 export: created_at is when the rule was made, applied months as before.
+    created_col = headers.index("created_at") + 1
+    created = datetime(date.today().year, date.today().month, 1) - timedelta(days=70)
+    ws.cell(row=2, column=created_col, value=created.strftime("%Y-%m-%d %H:%M:%S"))
+    buf = io.BytesIO()
+    wb.save(buf)
+
+    other = register_and_login(TestClient(app), "rec-v3-dst")
+    dst_uid, _, _ = _ids_for("rec-v3-dst")
+    resp = _import(other, buf.getvalue())
+    assert resp.status_code == 200, resp.text
+    conn = get_connection()
+    rule = conn.execute(
+        "SELECT * FROM recurring_entries WHERE user_id = ? AND notes = 'v3 rent'", (dst_uid,)
+    ).fetchone()
+    conn.close()
+    assert (rule["interval_unit"], rule["interval_count"]) == ("month", 1)
+    expected_start, expected_floor = db.legacy_recurring_start(created.date(), rule["day_of_month"])
+    assert (rule["start_date"], rule["not_before"]) == (expected_start, expected_floor)

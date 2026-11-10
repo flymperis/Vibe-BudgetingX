@@ -1,8 +1,10 @@
 """Credit cards (old tests/test_credit_cards.py): owed / available, the
-statement cycle, paying a card by transfer. The export/import test is PENDING
-with the excel import/export domain."""
+statement cycle, paying a card by transfer, and the card settings surviving
+an export/import."""
 
 from datetime import date
+
+from fastapi.testclient import TestClient
 
 from vbx.core import finance
 
@@ -167,3 +169,30 @@ def test_home_splits_totals_and_pay_link_prefills_transfer(client):
     # the balances the transfer selects show
     assert by_id[bank_id]["current_balance"] == 0
     assert by_id[card_id]["current_balance"] == -400
+
+
+def test_card_settings_survive_export_import(client, app):
+    api = register_and_login(client, "cardexport")
+    _add_card(api, opening_balance="75")
+    workbook_bytes = api.get("/api/export/excel").content
+
+    other = register_and_login(TestClient(app), "cardimport")
+    resp = other.post(
+        "/api/import/excel",
+        files={
+            "file": (
+                "budget-export.xlsx",
+                workbook_bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
+        data={"replace_movements": "1", "sync_opening_balances": "1"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert "Import failed" not in resp.text
+
+    card = _account(user_id("cardimport"), "Eurobank Visa")
+    assert card["account_type"] == "credit"
+    assert card["opening_balance"] == -75
+    assert card["credit_limit"] == 1000
+    assert (card["statement_day"], card["due_day"]) == (5, 25)

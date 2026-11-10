@@ -136,6 +136,41 @@ def test_domain_a_endpoints_load_for_a_new_user(client):
     assert api.get("/api/recurring").json()["items"] == []
 
 
+def test_dashboard_loads_every_panel(client):
+    """Old: every ?panel=<p> in config.ALLOWED_PANELS answered 200 for a new
+    user. New: the data endpoint(s) of each panel (home, expenses, income,
+    recurring, transfer, summary, budget, shared, yearly, reports,
+    investments, settings), plus bootstrap."""
+    api = register_and_login(client, "carol-panels")
+    urls = (
+        "/api/bootstrap",
+        "/api/home",
+        "/api/expenses",
+        "/api/income",
+        "/api/recurring",
+        "/api/transfers",
+        "/api/summary",
+        "/api/budget",
+        "/api/shared",
+        "/api/yearly",
+        "/api/reports/overview",
+        "/api/reports/spending",
+        "/api/reports/tags",
+        "/api/reports/investments",
+        "/api/investments",
+        # settings sections (general is client-only)
+        "/api/accounts",
+        "/api/categories",
+        "/api/income-categories",
+        "/api/settings/integrations",
+        "/api/export/excel",
+        "/api/export/migration-template",
+    )
+    for url in urls:
+        resp = api.get(url)
+        assert resp.status_code == 200, f"{url} failed to load: {resp.text[:200]}"
+
+
 def test_add_income_entry(client):
     api = register_and_login(client, "erin")
     boot = api.get("/api/bootstrap").json()

@@ -1,8 +1,8 @@
 """Investments API (old tests/test_investments_and_rules.py, stock/crypto part)
 plus the old routes/investments.py validation, ownership and search rules.
 
-The recurring and transfer tests of the old file belong to the recurring /
-transfers routers (see docs/parity/D.md)."""
+The three recurring / transfer tests of the old file are at the end of this
+file (they use the recurring and transfers routers)."""
 
 import itertools
 import time
@@ -86,8 +86,8 @@ def test_crypto_add_edit_delete(client):
 
 def test_dashboard_loads_with_holdings(client):
     """Investments and reports do the most work; make sure every endpoint
-    answers once the user actually holds something. (The old test also loaded
-    the summary and yearly panels: those are other routers' endpoints.)"""
+    answers once the user actually holds something (summary and yearly
+    included, as in the old test)."""
     api = register_and_login(client, "holder")
     add_stock(
         api,
@@ -125,6 +125,9 @@ def test_dashboard_loads_with_holdings(client):
         "/api/reports/section?section=bank",
         "/api/reports/section?section=stocks",
         "/api/reports/section?section=crypto",
+        "/api/summary",
+        "/api/yearly",
+        "/api/home",
     ):
         assert api.get(url).status_code == 200, f"{url} failed to load"
     body = api.get("/api/investments").json()
@@ -465,3 +468,142 @@ def test_crypto_search(client, monkeypatch):
 
     monkeypatch.setattr(inv_svc, "coingecko_search", failing)
     assert api.get("/api/investments/crypto/search?q=bitcoin").json() == []
+
+
+def _first_ids(username):
+    conn = get_connection()
+    uid = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
+    account_id = conn.execute("SELECT id FROM accounts WHERE user_id = ? ORDER BY id LIMIT 1", (uid,)).fetchone()["id"]
+    category_id = conn.execute("SELECT id FROM categories WHERE user_id = ? ORDER BY id LIMIT 1", (uid,)).fetchone()[
+        "id"
+    ]
+    conn.close()
+    return account_id, category_id
+
+
+def test_recurring_add_edit_delete(client):
+    api = register_and_login(client, "recurringtester")
+    account_id, category_id = _first_ids("recurringtester")
+
+    resp = api.post(
+        "/api/recurring",
+        json={
+            "category_choice": f"e-{category_id}",
+            "amount": "50",
+            "account_id": str(account_id),
+            "day_of_month": "5",
+            "indefinitely": "1",
+            "notes": "monthly rent",
+        },
+    )
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT id, amount, day_of_month, months_to_run FROM recurring_entries WHERE notes = 'monthly rent'"
+    ).fetchone()
+    conn.close()
+    assert row is not None
+    assert row["amount"] == 50.0
+    assert row["day_of_month"] == 5
+    assert row["months_to_run"] is None  # "indefinitely"
+    rule_id = row["id"]
+
+    resp = api.put(
+        f"/api/recurring/{rule_id}",
+        json={
+            "category_choice": f"e-{category_id}",
+            "amount": "75",
+            "account_id": str(account_id),
+            "day_of_month": "10",
+            "months_to_run": "6",
+            "notes": "monthly rent",
+        },
+    )
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT amount, day_of_month, months_to_run FROM recurring_entries WHERE id = ?",
+        (rule_id,),
+    ).fetchone()
+    conn.close()
+    assert row["amount"] == 75.0
+    assert row["day_of_month"] == 10
+    assert row["months_to_run"] == 6
+
+    resp = api.delete(f"/api/recurring/{rule_id}")
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    assert conn.execute("SELECT id FROM recurring_entries WHERE id = ?", (rule_id,)).fetchone() is None
+    conn.close()
+
+
+def test_transfer_between_accounts(client):
+    api = register_and_login(client, "transfertester")
+    from_id, _ = _first_ids("transfertester")
+
+    resp = api.post("/api/accounts", json={"name": "Savings", "opening_balance": "0"})
+    assert resp.status_code == 200
+    conn = get_connection()
+    to_row = conn.execute(
+        """
+        SELECT a.id FROM accounts a
+        JOIN users u ON u.id = a.user_id
+        WHERE u.username = ? AND a.name = 'Savings'
+        """,
+        ("transfertester",),
+    ).fetchone()
+    conn.close()
+    assert to_row is not None
+
+    resp = api.post(
+        "/api/transfers",
+        json={
+            "from_account_id": str(from_id),
+            "to_account_id": str(to_row["id"]),
+            "amount": "200",
+            "transferred_at": "2026-04-01",
+            "notes": "to savings",
+        },
+    )
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    row = conn.execute(
+        """
+        SELECT t.id, t.amount FROM account_transfers t
+        JOIN users u ON u.id = t.user_id
+        WHERE u.username = ? AND t.notes = 'to savings'
+        """,
+        ("transfertester",),
+    ).fetchone()
+    conn.close()
+    assert row is not None
+    assert row["amount"] == 200.0
+
+    resp = api.delete(f"/api/transfers/{row['id']}")
+    assert resp.status_code == 200
+
+    conn = get_connection()
+    assert conn.execute("SELECT id FROM account_transfers WHERE id = ?", (row["id"],)).fetchone() is None
+    conn.close()
+
+
+def test_transfer_rejects_same_account(client):
+    api = register_and_login(client, "sameacct")
+    account_id, _ = _first_ids("sameacct")
+
+    resp = api.post(
+        "/api/transfers",
+        json={"from_account_id": str(account_id), "to_account_id": str(account_id), "amount": "50"},
+    )
+    assert resp.status_code == 400
+    conn = get_connection()
+    count = conn.execute(
+        "SELECT COUNT(*) AS n FROM account_transfers WHERE from_account_id = ? AND to_account_id = ?",
+        (account_id, account_id),
+    ).fetchone()["n"]
+    conn.close()
+    assert count == 0

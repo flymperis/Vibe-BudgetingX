@@ -36,9 +36,9 @@ def test_non_investments_panel_does_not_fetch_live_prices(client, monkeypatch):
     for url in urls:
         resp = api.get(url)
         assert resp.status_code == 200, url
-    # The Home screen's own endpoint, when that router is present.
+    # The Home screen's own endpoint.
     resp = api.get("/api/home")
-    assert resp.status_code in (200, 404)
+    assert resp.status_code == 200
     assert coingecko.calls == []
     assert finnhub.calls == []
 
