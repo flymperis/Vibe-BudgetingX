@@ -1,0 +1,21 @@
+# Tool configuration only (this is not a packaged project).
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# requirements-dev pins httpx (the spec); Starlette 1.x would prefer httpx2.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+# vbx/core is copied from the old app with the smallest possible diff:
+# never restyle it, so it is excluded from linting altogether.
+extend-exclude = ["vbx/core"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["vbx"]
