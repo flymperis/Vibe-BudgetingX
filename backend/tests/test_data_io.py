@@ -70,6 +70,9 @@ def test_import_needs_a_file(client):
     assert resp.status_code == 400 and resp.json() == {"detail": "Choose an Excel file (.xlsx)."}
     resp = api.post("/api/import/excel", files={"file": ("   ", b"PK", XLSX)})
     assert resp.status_code == 400 and resp.json() == {"detail": "Choose an Excel file (.xlsx)."}
+    # What a browser sends when no file is chosen: an empty text field named "file".
+    resp = api.post("/api/import/excel", data={"file": ""})
+    assert resp.status_code == 400 and resp.json() == {"detail": "Choose an Excel file (.xlsx)."}
 
 
 def test_import_rejects_an_empty_or_unreadable_file(client):

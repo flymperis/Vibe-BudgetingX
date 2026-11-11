@@ -138,3 +138,18 @@ def test_budget_flag_and_tags(client):
     assert body["budget_enabled"] is True
     assert body["tag_names"] == ["work"]
     assert body["recent_tags"] == ["work"]
+
+
+def test_bootstrap_creates_the_users_own_shared_person(client):
+    """Parity: the old dashboard created the "You" row on every page load."""
+    api = register_and_login(client, "bootself")
+    assert api.get("/api/bootstrap").status_code == 200
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT COUNT(*) FROM shared_people WHERE user_id = ? AND is_self = 1",
+            (user_id("bootself"),),
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert rows == 1

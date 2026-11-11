@@ -93,7 +93,7 @@ def budget_panel(conn: sqlite3.Connection, uid: int, month_filter: str) -> Budge
     defaults_total = sum(r["default"] for r in with_default) + (budget_other_amount or 0)
     cleared = budget_summary["cleared"]
     cleared_total_spent = None
-    if cleared:
+    if cleared and not budget_summary["rows"]:
         cleared_total_spent = budget_summary["total_spent"] + sum(u["spent"] for u in budget_summary["unbudgeted"])
 
     return BudgetPanelOut(

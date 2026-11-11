@@ -1029,7 +1029,8 @@ def test_override_after_clear_budgets_only_that_category(client):
     assert _row(may, general)["budget"] == 25.0
     assert _row(may, general)["default"] is None  # defaults do not apply this month
     assert _row(may, other_cat) is None
-    assert panel["can_clear_month"] is True and panel["cleared_total_spent"] == 0.0
+    # The old template shows the "spent" hero only when a cleared month has no rows.
+    assert panel["can_clear_month"] is True and panel["cleared_total_spent"] is None
 
 
 def test_reset_to_default_on_cleared_month_removes_the_budget(client):

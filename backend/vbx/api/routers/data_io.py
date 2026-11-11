@@ -51,14 +51,15 @@ def export_migration_template(user: User):
 @router.post("/import/excel", response_model=OkOut)
 def import_excel(
     user: User,
-    file: UploadFile | None = File(None),
+    file: UploadFile | str | None = File(None),
     replace_movements: str | None = Form(None),
     sync_opening_balances: str | None = Form(None),
 ):
     """multipart/form-data: file (.xlsx), replace_movements=1,
     sync_opening_balances=1. All or nothing: any error rolls the whole import
     back and is answered 400 "Import failed. ..." (first 8 errors)."""
-    if file is None or (file.filename or "").strip() == "":
+    # A browser with no file chosen sends an empty part, which arrives as a str.
+    if file is None or isinstance(file, str) or (file.filename or "").strip() == "":
         raise ApiError(400, "Choose an Excel file (.xlsx).")
 
     replace = replace_movements == "1"

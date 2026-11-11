@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter
 
-from vbx.core import budget, tags
+from vbx.core import budget, shared, tags
 from vbx.core.banks import detect_bank
 from vbx.core.finance import (
     apply_recurring_entries,
@@ -31,8 +31,11 @@ router = APIRouter(tags=["bootstrap"])
 def bootstrap(user: User, conn: DB):
     uid = user.id
     posted_recurring = apply_recurring_entries(conn, uid)
-    if posted_recurring > 0:
-        conn.commit()
+    # The old dashboard created the user's own "You" person row on every page
+    # load (shared.panel_context -> ensure_self) and committed it; keep that so
+    # shared_people ids come out the same for the same history.
+    shared.ensure_self(conn, uid)
+    conn.commit()
 
     categories = conn.execute(
         "SELECT id, name FROM categories WHERE user_id = ? ORDER BY name",
