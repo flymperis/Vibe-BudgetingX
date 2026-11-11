@@ -1,11 +1,6 @@
-import { Construction } from 'lucide-react'
-import { EmptyState } from '@/components/EmptyState'
-import { useT } from '@/i18n'
+import { PortfolioScreen } from './PortfolioScreen'
 
-/** Placeholder tab body: replace with the real content (see docs/FRONTEND.md). */
+/** /investments/crypto: crypto portfolio in EUR. */
 export default function CryptoPage() {
-  const t = useT()
-  return (
-    <EmptyState icon={Construction} title={t('investments.crypto')} description={t('common.comingSoon')} />
-  )
+  return <PortfolioScreen kind="crypto" />
 }

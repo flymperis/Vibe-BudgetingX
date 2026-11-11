@@ -1,8 +1,8 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder'
 import { useT } from '@/i18n'
+import { CategoriesManager } from './CategoriesManager'
 
-/** Placeholder: replace with the real screen (see docs/FRONTEND.md). */
+/** /settings/income-categories */
 export default function IncomeCategoriesPage() {
   const t = useT()
-  return <ScreenPlaceholder title={t('settings.incomeCategories')} backTo="/settings" />
+  return <CategoriesManager kind="income" title={t('settings.incomeCategories')} />
 }

@@ -14,6 +14,15 @@ const ICONS = {
   '/settings/integrations': Plug,
 } as const
 
+const HINTS = {
+  '/settings/general': 'settings.hintGeneral',
+  '/settings/accounts': 'settings.hintAccounts',
+  '/settings/expense-categories': 'settings.hintExpenseCategories',
+  '/settings/income-categories': 'settings.hintIncomeCategories',
+  '/settings/export': 'settings.hintExport',
+  '/settings/integrations': 'settings.hintIntegrations',
+} as const
+
 /** /settings: list of sections (each one is its own route). */
 export default function SettingsIndexPage() {
   const t = useT()
@@ -22,7 +31,13 @@ export default function SettingsIndexPage() {
       <PageHeader title={t('nav.settings')} />
       <ListGroup>
         {SETTINGS_SECTIONS.map((s) => (
-          <ListRow key={s.path} to={s.path} icon={<IconTile icon={ICONS[s.path]} />} title={t(s.label)} />
+          <ListRow
+            key={s.path}
+            to={s.path}
+            icon={<IconTile icon={ICONS[s.path]} />}
+            title={t(s.label)}
+            subtitle={t(HINTS[s.path])}
+          />
         ))}
       </ListGroup>
     </>

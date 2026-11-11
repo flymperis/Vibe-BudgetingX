@@ -1,49 +1,45 @@
-/**
- * SAMPLE Home: a static version of the approved mockup built from the real
- * building blocks, with made-up data. The home feature replaces this file.
- */
-import { FlaskConical, Pencil, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
+import { ArrowLeftRight, Minus, PiggyBank, Plus, ReceiptText, Table2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Link } from 'react-router'
+import { useQuickAdd } from '@/app/quick-add'
 import { useSession } from '@/auth/session'
 import { useToday } from '@/bootstrap/bootstrap'
-import { BudgetRow } from '@/components/BudgetRow'
-import { HeroCard, Panel } from '@/components/Cards'
-import { CategoryIcon } from '@/components/CategoryIcon'
-import { useConfirm } from '@/components/confirm'
-import { DetailRow } from '@/components/FormField'
+import { HeroCard } from '@/components/Cards'
+import { IconTile } from '@/components/CategoryIcon'
 import { ListGroup, ListRow, SectionHeader } from '@/components/ListGroup'
-import { Money } from '@/components/Money'
+import { flattenPages, useEntryList } from '@/components/money/entries'
+import { EntryActionSheets } from '@/components/money/EntryActionSheets'
+import { TxnRow } from '@/components/money/TxnRow'
+import { useEntryActions } from '@/components/money/use-entry-actions'
+import { MonthSwitcher } from '@/components/MonthSwitcher'
 import { PageHeader } from '@/components/PageHeader'
-import { ProgressBar } from '@/components/ProgressBar'
-import { ResponsiveSheet } from '@/components/ResponsiveSheet'
-import { TagText } from '@/components/TagText'
-import { Button } from '@/components/ui/button'
-import { SAMPLE_CATEGORIES, SAMPLE_TOTALS, sampleTransactions, type SampleTxn } from '@/dev/sample-data'
-import { useMonth } from '@/hooks/useMonth'
+import { ListSkeleton } from '@/components/skeletons'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMonth, useMonthSearch } from '@/hooks/useMonth'
 import { useLang, useT } from '@/i18n'
-import { monthLabel, relativeDayLabel } from '@/lib/dates'
-import { formatMoney } from '@/lib/money'
+import { fullDateLabel, monthLabel } from '@/lib/dates'
+import { cn } from '@/lib/utils'
+import { useHome } from './api'
+import { BalancesList } from './BalancesList'
+import { HomeBudgetCard } from './HomeBudgetCard'
 
+const RECENT_COUNT = 5
+
+/** Home (old `_home.html`): the month's net, income and expenses, budget, balances, shortcuts. */
 export default function HomePage() {
   const t = useT()
   const lang = useLang()
   const today = useToday()
   const { month } = useMonth()
+  const search = useMonthSearch()
   const session = useSession()
-  const confirm = useConfirm()
-  const [selected, setSelected] = useState<SampleTxn | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
-
-  const txns = sampleTransactions(today)
-  const spent = -SAMPLE_TOTALS.expenses
-  const initial = session.data?.user?.username?.charAt(0) ?? 'Φ'
-  const topCategories = [...SAMPLE_CATEGORIES].sort((a, b) => b.spent - a.spent).slice(0, 4)
-
-  const openDetail = (txn: SampleTxn) => {
-    setSelected(txn)
-    setDetailOpen(true)
-  }
+  const quickAdd = useQuickAdd()
+  const home = useHome(month)
+  const recent = useEntryList('expense', { month, categoryId: null })
+  const recentRows = flattenPages(recent.data).slice(0, RECENT_COUNT)
+  const actions = useEntryActions()
+  const initial = session.data?.user?.username?.charAt(0) ?? ''
+  const data = home.data
 
   return (
     <>
@@ -51,116 +47,138 @@ export default function HomePage() {
         title={t('nav.home')}
         eyebrow={monthLabel(month, lang)}
         actions={
-          <span
-            aria-hidden
-            className="grid size-10 place-items-center rounded-full bg-primary text-base font-semibold text-primary-foreground uppercase"
-          >
-            {initial}
-          </span>
+          initial ? (
+            <span
+              aria-hidden
+              className="grid size-10 place-items-center rounded-full bg-primary text-base font-semibold text-primary-foreground uppercase"
+            >
+              {initial}
+            </span>
+          ) : null
         }
       />
+      <MonthSwitcher className="mb-2 -ml-2" />
 
-      <p className="mb-3 flex items-center gap-2 rounded-xl border border-dashed px-3 py-2 text-xs text-muted-foreground">
-        <FlaskConical aria-hidden className="size-4 shrink-0" />
-        {t('home.sampleNotice')}
-      </p>
+      {data ? (
+        <HeroCard
+          label={t('home.net')}
+          amount={data.net}
+          pills={[
+            { label: t('home.incomePill'), value: data.total_income },
+            { label: t('home.expensesPill'), value: data.total_expenses },
+          ]}
+          className={cn('transition-opacity', home.isPlaceholderData && 'opacity-70')}
+        >
+          <p className="mt-3 text-[11px] opacity-75">{t('home.intro')}</p>
+        </HeroCard>
+      ) : (
+        <Skeleton className="h-44 w-full rounded-3xl" />
+      )}
 
-      <HeroCard
-        label={t('home.totalBalance')}
-        amount={SAMPLE_TOTALS.balance}
-        pills={[
-          { label: t('home.monthIncome'), value: SAMPLE_TOTALS.income },
-          { label: t('home.monthExpenses'), value: SAMPLE_TOTALS.expenses },
-        ]}
-      />
+      <div role="group" aria-label={t('home.quickActions')} className="mt-3.5 grid grid-cols-3 gap-2.5">
+        <QuickAction
+          icon={<Minus aria-hidden />}
+          label={t('home.addExpense')}
+          onClick={() => quickAdd.open({ kind: 'expense' })}
+        />
+        <QuickAction
+          icon={<Plus aria-hidden />}
+          label={t('home.addIncome')}
+          onClick={() => quickAdd.open({ kind: 'income' })}
+          tone="positive"
+        />
+        <QuickAction
+          icon={<ArrowLeftRight aria-hidden />}
+          label={t('home.transfer')}
+          to={`/transfers${search}`}
+        />
+      </div>
 
-      <Panel className="mt-3.5">
-        <div className="mb-2 flex justify-between gap-2 text-[13px] text-muted-foreground">
-          <span>{t('home.monthBudget')}</span>
-          <span className="tabular-nums">
-            {t('progress.label', { spent: formatMoney(spent), budget: formatMoney(SAMPLE_TOTALS.budget) })}
-          </span>
-        </div>
-        <ProgressBar value={spent} max={SAMPLE_TOTALS.budget} label={t('home.monthBudget')} />
-      </Panel>
+      {data?.budget_card ? <HomeBudgetCard card={data.budget_card} month={data.month} /> : null}
+
+      <SectionHeader title={t('home.balances')} />
+      {data ? (
+        <>
+          <BalancesList home={data} />
+          <p className="mx-1 mt-2 text-xs text-muted-foreground">
+            {data.balance_scope === 'today'
+              ? t('home.scopeToday')
+              : t('home.scopeMonthEnd', { date: fullDateLabel(data.balance_as_of, lang, '0000-00-00') })}
+          </p>
+        </>
+      ) : (
+        <ListSkeleton rows={3} />
+      )}
 
       <SectionHeader
-        title={t('home.categories')}
-        action={{ label: t('home.allCategories'), to: '/reports/spending' }}
+        title={t('home.recentExpenses')}
+        action={{ label: t('common.seeAll'), to: `/expenses${search}` }}
       />
-      <Panel className="py-2">
-        {topCategories.map((c) => (
-          <BudgetRow key={c.name} name={c.name} spent={c.spent} budget={c.budget} />
-        ))}
-      </Panel>
+      {recent.isPending ? (
+        <ListSkeleton rows={3} />
+      ) : recentRows.length ? (
+        <ListGroup label={t('home.recentExpenses')}>
+          {recentRows.map((e) => (
+            <TxnRow key={e.id} entry={e} today={today} showDay onOpen={actions.open} />
+          ))}
+        </ListGroup>
+      ) : (
+        <p className="mx-1 text-sm text-muted-foreground">
+          {t('expenses.emptyMonth', { month: monthLabel(month, lang) })}
+        </p>
+      )}
 
-      <SectionHeader title={t('home.recent')} action={{ label: t('common.seeAll'), to: '/expenses' }} />
-      <ListGroup label={t('home.recent')}>
-        {txns.slice(0, 5).map((txn) => (
-          <ListRow
-            key={txn.id}
-            onClick={() => openDetail(txn)}
-            icon={<CategoryIcon name={txn.category} />}
-            title={<TagText text={txn.notes || txn.category} asText />}
-            subtitle={`${txn.category} · ${txn.account}`}
-            amount={txn.amount}
-          />
-        ))}
+      <SectionHeader title={t('home.links')} />
+      <ListGroup label={t('home.links')}>
+        <ListRow
+          to={`/expenses${search}`}
+          icon={<IconTile icon={ReceiptText} />}
+          title={t('home.expenseList')}
+        />
+        <ListRow to={`/income${search}`} icon={<IconTile icon={PiggyBank} />} title={t('home.incomeList')} />
+        <ListRow to={`/summary${search}`} icon={<IconTile icon={Table2} />} title={t('home.summaryLink')} />
       </ListGroup>
 
-      <ResponsiveSheet
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        title={selected?.notes || selected?.category || ''}
-        hideTitle
-        size="sm"
-        footer={
-          <>
-            <Button size="block" onClick={() => toast(t('common.sampleData'))}>
-              <Pencil aria-hidden />
-              {t('common.edit')}
-            </Button>
-            <Button
-              size="block"
-              variant="secondary"
-              className="text-negative"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: t('common.delete'),
-                  destructive: true,
-                  confirmLabel: t('common.delete'),
-                })
-                if (ok) {
-                  setDetailOpen(false)
-                  toast.success(t('common.sampleData'))
-                }
-              }}
-            >
-              <Trash2 aria-hidden />
-              {t('common.delete')}
-            </Button>
-          </>
-        }
-      >
-        {selected ? (
-          <div>
-            <div className="mt-1 mb-4 flex flex-col items-center text-center">
-              <CategoryIcon name={selected.category} size="lg" className="mb-2.5" />
-              <Money
-                value={selected.amount}
-                tone="positive"
-                className="text-[32px] font-bold tracking-tight"
-              />
-              <p className="mt-1 text-muted-foreground">
-                <TagText text={selected.notes} />
-              </p>
-            </div>
-            <DetailRow label={t('common.category')}>{selected.category}</DetailRow>
-            <DetailRow label={t('common.account')}>{selected.account}</DetailRow>
-            <DetailRow label={t('common.day')}>{relativeDayLabel(selected.day, lang, today)}</DetailRow>
-          </div>
-        ) : null}
-      </ResponsiveSheet>
+      <EntryActionSheets {...actions.sheets} />
     </>
+  )
+}
+
+function QuickAction({
+  icon,
+  label,
+  onClick,
+  to,
+  tone,
+}: {
+  icon: ReactNode
+  label: string
+  onClick?: () => void
+  to?: string
+  tone?: 'positive'
+}) {
+  const cls =
+    'flex h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border bg-card text-[13px] font-semibold shadow-card transition-colors outline-none hover:bg-muted/60 active:bg-muted focus-visible:ring-2 focus-visible:ring-ring'
+  const body = (
+    <>
+      <span
+        className={cn(
+          'grid size-8 place-items-center rounded-full [&_svg]:size-4',
+          tone === 'positive' ? 'bg-positive/15 text-positive' : 'bg-primary/10 text-primary',
+        )}
+      >
+        {icon}
+      </span>
+      {label}
+    </>
+  )
+  return to ? (
+    <Link to={to} className={cls}>
+      {body}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} className={cls}>
+      {body}
+    </button>
   )
 }

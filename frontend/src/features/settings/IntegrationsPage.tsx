@@ -1,8 +1,47 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder'
+import { RefreshCw } from 'lucide-react'
+import { errorMessage } from '@/app/query-client'
+import { PageHeader } from '@/components/PageHeader'
+import { CardSkeleton } from '@/components/skeletons'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/EmptyState'
 import { useT } from '@/i18n'
+import { AiSettingsCard } from './AiSettingsCard'
+import { useIntegrations } from './api'
+import { TelegramCard } from './TelegramCard'
 
-/** Placeholder: replace with the real screen (see docs/FRONTEND.md). */
+/** /settings/integrations: local AI (Ollama) and the Telegram bot. */
 export default function IntegrationsPage() {
   const t = useT()
-  return <ScreenPlaceholder title={t('settings.integrations')} backTo="/settings" />
+  const q = useIntegrations()
+  return (
+    <>
+      <PageHeader title={t('settings.integrations')} backTo="/settings" />
+      {q.isPending ? (
+        <div className="space-y-4">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      ) : q.isError ? (
+        <EmptyState
+          title={t('errors.loadFailed')}
+          description={errorMessage(q.error)}
+          action={
+            <Button size="touch" onClick={() => void q.refetch()}>
+              <RefreshCw aria-hidden />
+              {t('common.retry')}
+            </Button>
+          }
+        />
+      ) : (
+        <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
+          <AiSettingsCard settings={q.data.ai} />
+          {/* Remount when the server state changes (linked, code issued) so the forms start from it. */}
+          <TelegramCard
+            key={`${q.data.telegram.linked}-${q.data.telegram.link?.default_account_id ?? ''}`}
+            telegram={q.data.telegram}
+          />
+        </div>
+      )}
+    </>
+  )
 }

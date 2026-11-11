@@ -1,8 +1,6 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder'
-import { useT } from '@/i18n'
+import { EntryListScreen } from '@/components/money/EntryListScreen'
 
-/** Placeholder: replace with the real screen (see docs/FRONTEND.md). */
+/** Income: filters by month / category, endless list, add / edit / delete. */
 export default function IncomePage() {
-  const t = useT()
-  return <ScreenPlaceholder title={t('nav.income')} withMonth />
+  return <EntryListScreen kind="income" />
 }

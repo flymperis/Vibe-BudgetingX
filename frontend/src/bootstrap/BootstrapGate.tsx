@@ -1,12 +1,21 @@
 import type { ReactNode } from 'react'
 import { FullScreenError, FullScreenSkeleton } from '@/components/skeletons'
 import { BootstrapContext, useBootstrapQuery, type Bootstrap } from './bootstrap'
+import { useBootstrapSync } from './sync'
 
-/** Loads /api/bootstrap once and provides it to everything below. */
+/**
+ * Loads /api/bootstrap and provides it to everything below. It is fetched
+ * again when the app becomes visible or the day changes (that is when the
+ * server posts due recurring entries; see ./sync.ts).
+ */
 export function BootstrapGate({ children }: { children: ReactNode }) {
   const query = useBootstrapQuery()
-  if (query.isPending) return <FullScreenSkeleton />
-  if (query.isError) return <FullScreenError error={query.error} onRetry={() => void query.refetch()} />
+  useBootstrapSync(query.data, query.dataUpdatedAt)
+  // A failed background refetch keeps the data already on screen.
+  if (!query.data) {
+    if (query.isError) return <FullScreenError error={query.error} onRetry={() => void query.refetch()} />
+    return <FullScreenSkeleton />
+  }
   return <BootstrapContext value={query.data}>{children}</BootstrapContext>
 }
 

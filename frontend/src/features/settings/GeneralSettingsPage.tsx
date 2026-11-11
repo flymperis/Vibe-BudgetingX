@@ -1,5 +1,7 @@
-import { LogOut } from 'lucide-react'
+import { LogOut, UserRound } from 'lucide-react'
 import { useLogout } from '@/auth/session'
+import { useBootstrap } from '@/bootstrap/bootstrap'
+import { IconTile } from '@/components/CategoryIcon'
 import { Panel } from '@/components/Cards'
 import { PageHeader } from '@/components/PageHeader'
 import { LanguageSwitch, ModeSwitch, ThemeSwatches } from '@/components/Preferences'
@@ -7,12 +9,13 @@ import { Button } from '@/components/ui/button'
 import { useT } from '@/i18n'
 
 /**
- * /settings/general: appearance and language are per-device (localStorage),
- * so this part is complete. Server-side general settings get added here.
+ * /settings/general: appearance and language are per-device (localStorage);
+ * the signed-in user and "Log out" (old header) live here too.
  */
 export default function GeneralSettingsPage() {
   const t = useT()
   const logout = useLogout()
+  const { user } = useBootstrap()
   return (
     <>
       <PageHeader title={t('settings.general')} backTo="/settings" />
@@ -26,6 +29,13 @@ export default function GeneralSettingsPage() {
           <h2 className="text-sm font-semibold">{t('settings.language')}</h2>
           <LanguageSwitch />
         </section>
+      </Panel>
+      <Panel className="mt-4 flex items-center gap-3">
+        <IconTile icon={UserRound} />
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">{t('settings.signedInAs')}</p>
+          <p className="truncate text-[15px] font-semibold">{user.username}</p>
+        </div>
       </Panel>
       <Button
         variant="destructive"
