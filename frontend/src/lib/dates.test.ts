@@ -6,6 +6,10 @@ import {
   fullDateLabel,
   isValidMonth,
   monthLabel,
+  monthLabelGenitive,
+  monthName,
+  monthNameGenitive,
+  monthNameOf,
   monthShortName,
   parseISODate,
   relativeDayLabel,
@@ -64,5 +68,29 @@ describe('dates', () => {
     expect(monthLabel('2026-11', 'en')).toBe('November 2026')
     expect(monthShortName('2026-11', 'en')).toBe('Nov')
     expect(monthShortName('2026-11', 'el')).toMatch(/^Νοε/)
+  })
+
+  it('names Greek months in the nominative for headings and the genitive for sentences', () => {
+    expect(monthName('2026-03', 'el')).toBe('Μάρτιος')
+    expect(monthName('2026-05', 'el')).toBe('Μάιος')
+    expect(monthNameGenitive('2026-03', 'el')).toBe('Μαρτίου')
+    expect(monthNameGenitive('2026-05', 'el')).toBe('Μαΐου')
+    expect(monthLabel('2026-08', 'el')).toBe('Αύγουστος 2026')
+    expect(monthLabelGenitive('2026-08', 'el')).toBe('Αυγούστου 2026')
+    expect(monthNameOf(1, 'el')).toBe('Ιανουάριος')
+    expect(monthNameOf(12, 'el', 'genitive')).toBe('Δεκεμβρίου')
+    // Every month, both forms, are distinct and capitalised.
+    const nom = Array.from({ length: 12 }, (_, i) => monthNameOf(i + 1, 'el'))
+    const gen = Array.from({ length: 12 }, (_, i) => monthNameOf(i + 1, 'el', 'genitive'))
+    expect(new Set([...nom, ...gen]).size).toBe(24)
+    expect(nom.every((n) => /^[Α-Ω]/.test(n))).toBe(true)
+  })
+
+  it('has one form in English and rejects bad input', () => {
+    expect(monthName('2026-03', 'en')).toBe('March')
+    expect(monthNameGenitive('2026-03', 'en')).toBe('March')
+    expect(monthLabelGenitive('2026-03', 'en')).toBe('March 2026')
+    expect(monthNameOf(13, 'el')).toBe('13')
+    expect(monthName('nope', 'el')).toBe('nope')
   })
 })

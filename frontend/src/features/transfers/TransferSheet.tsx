@@ -1,12 +1,13 @@
 import { ArrowDownUp } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState } from 'react'
 import { errorMessage } from '@/app/query-client'
 import { AmountEntry, AmountKeypad } from '@/components/Amount'
 import { ChipPicker } from '@/components/ChipPicker'
 import { DatePicker } from '@/components/DatePicker'
 import { FieldError, FieldLabel } from '@/components/FormField'
-import { AccountAvatar } from '@/components/manage/AccountAvatar'
-import type { Account } from '@/components/manage/accounts-api'
+import { AccountAvatar } from '@/components/AccountAvatar'
+import type { Account } from '@/api/accounts'
 import { ResponsiveSheet } from '@/components/ResponsiveSheet'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -40,6 +41,7 @@ export function TransferSheet({ open, onOpenChange, accounts, defaults, payingCa
   const [form, setForm] = useState<TransferForm>(() => transferFormFromDefaults(defaults))
   const [problem, setProblem] = useState<string | null>(null)
   const create = useCreateTransfer()
+  const lock = useMutationLock(create)
   const set = (patch: Partial<TransferForm>) => {
     setProblem(null)
     create.reset()
@@ -59,11 +61,13 @@ export function TransferSheet({ open, onOpenChange, accounts, defaults, payingCa
   const same = sameAccount(form)
 
   const save = () => {
+    if (create.isPending) return
     const issue = validateTransfer(form)
     if (issue) {
       setProblem(t(issue))
       return
     }
+    if (!lock.take()) return
     create.mutate(buildTransferBody(form), { onSuccess: () => onOpenChange(false) })
   }
 

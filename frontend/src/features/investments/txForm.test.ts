@@ -69,7 +69,9 @@ describe('bodies', () => {
     })
   })
   it('maps the stock form', () => {
-    expect(stockBody({ ...f, code: 'VUAA.EU', symbol: 'VUAA', name: 'Vanguard', venue: 'Freedom24' })).toEqual({
+    expect(
+      stockBody({ ...f, code: 'VUAA.EU', symbol: 'VUAA', name: 'Vanguard', venue: 'Freedom24' }),
+    ).toEqual({
       symbol: 'VUAA.EU',
       ticker: 'VUAA',
       instrument_name: 'Vanguard',

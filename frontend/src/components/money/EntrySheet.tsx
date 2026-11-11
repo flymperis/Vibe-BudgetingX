@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { toast } from 'sonner'
 import { errorMessage } from '@/app/query-client'
 import { useBootstrap, useToday } from '@/bootstrap/bootstrap'
@@ -62,6 +63,7 @@ export function EntrySheet({
   const isDesktop = useIsDesktop()
   const formId = useId()
   const save = useSaveEntry()
+  const lock = useMutationLock(save)
 
   const freshState = () => {
     const k = entry?.kind ?? initialKind
@@ -111,6 +113,7 @@ export function EntrySheet({
   }
 
   const submit = () => {
+    if (save.isPending) return
     const problem = validateDraft(draft)
     if (problem) {
       setInvalid(problem)
@@ -120,6 +123,7 @@ export function EntrySheet({
     const category = (kind === 'expense' ? boot.categories : boot.income_categories).find(
       (c) => c.id === draft.categoryId,
     )
+    if (!lock.take()) return
     save.mutate(
       { kind, id: entry?.id, body: draftToBody(kind, draft) },
       {

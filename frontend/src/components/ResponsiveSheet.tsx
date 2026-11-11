@@ -8,7 +8,8 @@
  *     ...form...
  *   </ResponsiveSheet>
  *
- * Both trap focus, close on Escape and restore focus to the opener (Radix).
+ * Both trap focus, close on Escape and restore focus to the opener (Radix),
+ * and the back button closes them (useBackToClose).
  */
 import type { ReactNode } from 'react'
 import {
@@ -27,6 +28,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import { useBackToClose } from '@/hooks/useBackToClose'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { cn } from '@/lib/utils'
 
@@ -59,6 +61,8 @@ export function ResponsiveSheet({
   className,
 }: ResponsiveSheetProps) {
   const isDesktop = useIsDesktop()
+  // Back (browser, Android gesture) closes the sheet instead of leaving the screen.
+  useBackToClose(open, () => onOpenChange(false))
   // Without a description, tell Radix there is none (avoids its console warning).
   const noDescription = description ? {} : { 'aria-describedby': undefined }
 
@@ -66,7 +70,13 @@ export function ResponsiveSheet({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className={cn('max-h-[90dvh] gap-0 overflow-y-auto rounded-2xl p-5', DIALOG_WIDTH[size], className)}
+          // The dialog is a CSS grid: without min-w-0 on its children a horizontally
+          // scrolling child (ChipPicker, tables) would widen the dialog itself.
+          className={cn(
+            'max-h-[90dvh] gap-0 overflow-y-auto rounded-2xl p-5 [&>*]:min-w-0',
+            DIALOG_WIDTH[size],
+            className,
+          )}
           {...noDescription}
         >
           <DialogHeader className={cn('mb-3', hideTitle && 'sr-only')}>

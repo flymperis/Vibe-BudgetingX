@@ -34,12 +34,17 @@ export const qk = {
 }
 
 /**
- * Domains whose figures depend on transactions. A mutation that creates, edits
- * or deletes money movements calls `invalidateMoney(queryClient)`.
+ * Domains whose figures depend on transactions or account balances. A mutation
+ * that creates, edits or deletes money movements (expense, income, transfer,
+ * recurring rule, shared bill/payment and its recording, account opening
+ * balance, import) calls `invalidateMoney(queryClient)`. The full matrix of
+ * mutation -> invalidated keys is in docs/FRONTEND.md.
  */
 export const MONEY_DOMAINS = [
-  'bootstrap',
+  'bootstrap', // accounts with balances, recent tags, posted recurring entries
   'home',
+  'accounts', // /api/accounts: Transfers and Settings -> accounts balances
+  'categories', // entry / rule counts in Settings -> categories
   'expenses',
   'income',
   'recurring',

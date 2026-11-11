@@ -1,11 +1,12 @@
 import { Trash2 } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState } from 'react'
 import { errorMessage } from '@/app/query-client'
 import { ChipPicker } from '@/components/ChipPicker'
 import { useConfirm } from '@/components/confirm'
 import { DetailRow, FieldError, FieldLabel } from '@/components/FormField'
-import { AccountAvatar } from '@/components/manage/AccountAvatar'
-import type { Account } from '@/components/manage/accounts-api'
+import { AccountAvatar } from '@/components/AccountAvatar'
+import type { Account } from '@/api/accounts'
 import { Money } from '@/components/Money'
 import { ResponsiveSheet } from '@/components/ResponsiveSheet'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ export function AccountSheet({ open, onOpenChange, account }: AccountSheetProps)
   const t = useT()
   const confirm = useConfirm()
   const save = useSaveAccount()
+  const lock = useMutationLock(save)
   const del = useDeleteAccount()
   const ids = { name: useId(), type: useId(), opening: useId(), limit: useId(), st: useId(), due: useId() }
   const [form, setForm] = useState<AccountForm>(() =>
@@ -48,11 +50,13 @@ export function AccountSheet({ open, onOpenChange, account }: AccountSheetProps)
   }
 
   const submit = () => {
+    if (save.isPending) return
     const issue = validateAccount(form)
     if (issue) {
       setProblem(t(issue))
       return
     }
+    if (!lock.take()) return
     save.mutate(
       { id: account?.id ?? null, body: buildAccountBody(form) },
       { onSuccess: () => onOpenChange(false) },

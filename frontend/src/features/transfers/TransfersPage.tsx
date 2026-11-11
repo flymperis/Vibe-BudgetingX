@@ -1,4 +1,6 @@
-import { ArrowLeftRight, ArrowRight, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, Trash2 } from 'lucide-react'
+import { LoadError } from '@/components/LoadError'
+import { AddButton } from '@/components/AddButton'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useToday } from '@/bootstrap/bootstrap'
@@ -6,9 +8,9 @@ import { useConfirm } from '@/components/confirm'
 import { EmptyState } from '@/components/EmptyState'
 import { DetailRow } from '@/components/FormField'
 import { SectionHeader } from '@/components/ListGroup'
-import { AccountAvatar } from '@/components/manage/AccountAvatar'
-import { AccountBalancesList } from '@/components/manage/AccountBalancesList'
-import { useAccounts, type Account } from '@/components/manage/accounts-api'
+import { AccountAvatar } from '@/components/AccountAvatar'
+import { AccountBalancesList, BalanceScopeHint } from '@/components/AccountBalancesList'
+import { useAccounts, type Account } from '@/api/accounts'
 import { Money } from '@/components/Money'
 import { MonthSwitcher } from '@/components/MonthSwitcher'
 import { PageHeader } from '@/components/PageHeader'
@@ -25,8 +27,6 @@ import { TransferSheet } from './TransferSheet'
 /** /transfers: new transfer (incl. "Pay card" via ?pay_card=), balances, last transfers. */
 export default function TransfersPage() {
   const t = useT()
-  const lang = useLang()
-  const today = useToday()
   const { month } = useMonth()
   const [params, setParams] = useSearchParams()
   const payCardRaw = params.get('pay_card')
@@ -65,28 +65,18 @@ export default function TransfersPage() {
     setParams(next)
   }
 
-  const asOf = accounts.data?.balance_as_of
   return (
     <>
       <PageHeader
         title={t('nav.transfers')}
-        actions={
-          canTransfer ? (
-            <Button
-              size="icon-touch"
-              className="rounded-full"
-              aria-label={t('transfers.newTitle')}
-              onClick={openNew}
-            >
-              <Plus aria-hidden />
-            </Button>
-          ) : null
-        }
+        actions={canTransfer ? <AddButton label={t('transfers.newTitle')} onClick={openNew} /> : null}
       />
       <p className="-mt-2 mb-3 text-sm text-muted-foreground">{t('transfers.intro')}</p>
       <MonthSwitcher className="mb-3 -ml-2" />
 
-      {accounts.isPending ? (
+      {accounts.isError && !accounts.data ? (
+        <LoadError onRetry={() => void accounts.refetch()} />
+      ) : accounts.isPending ? (
         <CardSkeleton />
       ) : !canTransfer ? (
         <EmptyState
@@ -99,25 +89,27 @@ export default function TransfersPage() {
             </Button>
           }
         />
-      ) : (
-        <Button size="block" onClick={openNew} className="md:w-auto md:px-6">
-          <ArrowLeftRight aria-hidden />
-          {t('transfers.newTitle')}
-        </Button>
-      )}
+      ) : null}
 
       <div className="md:grid md:grid-cols-2 md:gap-6">
         {items.length ? (
           <section>
-            <SectionHeader title={t('manage.balances')} />
-            {asOf ? (
-              <p className="-mt-1 mb-2.5 text-xs text-muted-foreground">
-                {accounts.data?.through_today
-                  ? t('transfers.scopeToday')
-                  : t('transfers.scopeMonth', { date: fullDateLabel(asOf, lang, today) })}
-              </p>
+            <SectionHeader title={t('accounts.balances')} />
+            {accounts.data ? (
+              <>
+                <AccountBalancesList
+                  accounts={items}
+                  totals={accounts.data.totals}
+                  hasCards={accounts.data.has_cards}
+                  onPay={pay}
+                />
+                <BalanceScopeHint
+                  throughToday={accounts.data.through_today}
+                  asOf={accounts.data.balance_as_of}
+                  className="mt-2"
+                />
+              </>
             ) : null}
-            {accounts.data ? <AccountBalancesList data={accounts.data} onPay={pay} /> : null}
           </section>
         ) : null}
 

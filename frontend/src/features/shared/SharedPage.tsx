@@ -1,15 +1,15 @@
-import { useSearchParams } from 'react-router'
-import { GroupDetailScreen } from './GroupDetail'
+import { Navigate, useLocation } from 'react-router'
+import { groupFromSearch, groupPath, withoutGroup } from './nav'
 import { SharedOverviewScreen } from './SharedOverview'
 
 /**
- * /shared shows the overview; /shared?group=<id> one group. The group lives in
- * the URL (a pushed history entry) so it can be linked and Back returns to the
- * overview. A real /shared/groups/:id route is a foundation request.
+ * /shared: the overview. Old links `/shared?group=<id>` (and the old app's
+ * `?panel=shared&group=<id>`) are redirected to /shared/groups/<id>.
  */
 export default function SharedPage() {
-  const [params] = useSearchParams()
-  const groupId = Number(params.get('group'))
-  if (Number.isInteger(groupId) && groupId > 0) return <GroupDetailScreen key={groupId} groupId={groupId} />
+  const location = useLocation()
+  const groupId = groupFromSearch(location.search)
+  if (groupId !== null)
+    return <Navigate replace to={{ pathname: groupPath(groupId), search: withoutGroup(location.search) }} />
   return <SharedOverviewScreen />
 }

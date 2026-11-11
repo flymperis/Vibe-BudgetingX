@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { errorMessage } from '@/app/query-client'
@@ -82,6 +83,7 @@ function TxForm({ kind, tx, onOpenChange }: TxSheetProps) {
   const qc = useQueryClient()
   const confirm = useConfirm()
   const save = useSaveTransaction()
+  const lock = useMutationLock(save)
   const remove = useDeleteTransaction()
   const [form, setForm] = useState<TxFormState>(() => (tx ? txToForm(kind, tx) : emptyTxForm(kind, today)))
   const set = <K extends keyof TxFormState>(key: K, value: TxFormState[K]) =>
@@ -98,6 +100,7 @@ function TxForm({ kind, tx, onOpenChange }: TxSheetProps) {
       kind === 'crypto'
         ? ({ kind, id: tx?.id, body: cryptoBody(form) } as const)
         : ({ kind, id: tx?.id, body: stockBody(form) } as const)
+    if (!lock.take()) return
     save.mutate(args, { onSuccess: () => onOpenChange(false) })
   }
 
@@ -159,7 +162,9 @@ function TxForm({ kind, tx, onOpenChange }: TxSheetProps) {
         inputId={fid('search')}
         onPick={(item) =>
           setForm((f) =>
-            isCrypto ? applyCryptoPick(f, item as CryptoSearchItem) : applyStockPick(f, item as StockSearchItem),
+            isCrypto
+              ? applyCryptoPick(f, item as CryptoSearchItem)
+              : applyStockPick(f, item as StockSearchItem),
           )
         }
       />

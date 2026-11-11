@@ -11,10 +11,10 @@ import {
   type TooltipContentProps,
 } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
-import { formatAxisMoney, monthNominative } from '@/components/insights/format'
+import { formatAxisMoney } from '@/lib/format'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { useLang, useT } from '@/i18n'
-import { monthShortName } from '@/lib/dates'
+import { monthNameOf, monthShortName } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import type { BalanceChartData } from '../api'
 import { ChartTooltipBox, TooltipLine } from './ChartTooltipBox'
@@ -47,12 +47,13 @@ export default function BalanceChart({ chart, year, currency = '€', baseline, 
   const isDesktop = useIsDesktop()
   const gradientId = useId().replace(/:/g, '')
   const rows: Row[] = chart.points.map((p) => ({
-    month: monthNominative(year, p.month_num, lang),
+    month: monthNameOf(p.month_num, lang),
     short: monthShortName(monthKey(year, p.month_num), lang),
     value: p.value,
     change: p.change,
   }))
-  const hasRange = chart.y_min !== null && chart.y_max !== null && chart.y_min !== undefined && chart.y_max !== undefined
+  const hasRange =
+    chart.y_min !== null && chart.y_max !== null && chart.y_min !== undefined && chart.y_max !== undefined
   const domain: [number, number] = hasRange ? [chart.y_min as number, chart.y_max as number] : [0, 1]
   const ticks = hasRange
     ? [chart.y_min, chart.y_mid, chart.y_max].filter((v): v is number => typeof v === 'number')
@@ -63,7 +64,11 @@ export default function BalanceChart({ chart, year, currency = '€', baseline, 
     if (!row) return null
     return (
       <ChartTooltipBox title={row.month}>
-        <TooltipLine color={CHART.line} label={t('reports.value')} value={formatMoney(row.value, { currency })} />
+        <TooltipLine
+          color={CHART.line}
+          label={t('reports.value')}
+          value={formatMoney(row.value, { currency })}
+        />
         <TooltipLine
           label={t('reports.change')}
           value={
@@ -79,7 +84,11 @@ export default function BalanceChart({ chart, year, currency = '€', baseline, 
   return (
     <figure>
       <figcaption className="sr-only">{caption}</figcaption>
-      <div className="h-56 w-full [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none md:h-64" role="img" aria-label={caption}>
+      <div
+        className="h-56 w-full md:h-64 [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none"
+        role="img"
+        aria-label={caption}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={rows} margin={{ top: 10, right: 6, bottom: 0, left: 0 }}>
             <defs>
@@ -109,12 +118,7 @@ export default function BalanceChart({ chart, year, currency = '€', baseline, 
               tickFormatter={(v: number) => formatAxisMoney(v, currency, lang)}
             />
             {baseline !== null && baseline !== undefined ? (
-              <ReferenceLine
-                y={baseline}
-                stroke={CHART.baseline}
-                strokeDasharray="5 4"
-                ifOverflow="hidden"
-              />
+              <ReferenceLine y={baseline} stroke={CHART.baseline} strokeDasharray="5 4" ifOverflow="hidden" />
             ) : null}
             <Tooltip
               content={renderTooltip}

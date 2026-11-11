@@ -35,7 +35,7 @@ export const insightsEl = {
   'investments.txAdded': 'Η συναλλαγή καταχωρίστηκε',
   'investments.editTx': 'Επεξεργασία συναλλαγής',
   'investments.deleteTx': 'Διαγραφή συναλλαγής',
-  'investments.deleteTxTitle': 'Να διαγραφεί η συναλλαγή;',
+  'investments.deleteTxTitle': 'Διαγραφή συναλλαγής;',
   'investments.type': 'Είδος',
   'investments.buy': 'Αγορά',
   'investments.sell': 'Πώληση',
@@ -79,8 +79,7 @@ export const insightsEl = {
   'reports.bestWorst': 'Καλύτερος μήνας ο {best} ({bestNet}), πιο σφιχτός ο {worst} ({worstNet}).',
   'reports.nothingInYear': 'Τίποτα καταχωρισμένο το {year}',
   'reports.whatYouHold': 'Τι έχεις',
-  'reports.holdHint':
-    'Τράπεζα: {account}, μέχρι σήμερα. Crypto και μετοχές αποτιμώνται με {when}.',
+  'reports.holdHint': 'Τράπεζα: {account}, μέχρι σήμερα. Crypto και μετοχές αποτιμώνται με {when}.',
   'reports.todaysPrices': 'τις σημερινές τιμές',
   'reports.endOfYear': 'τις τιμές στο τέλος του {year}',
   'reports.bank': 'Τράπεζα',
@@ -97,7 +96,6 @@ export const insightsEl = {
   'reports.change': 'Μεταβολή (Δ)',
   'reports.baseline': 'Τέλος {year}: {value}',
   'reports.monthByMonth': 'Μήνα προς μήνα',
-  'reports.month': 'Μήνας',
   'reports.spendingTitle': 'Πού πήγαν τα χρήματα το {year}',
   'reports.ranking': 'Κατηγορίες κατά έξοδα',
   'reports.rankingHint':
@@ -233,7 +231,6 @@ export const insightsEn: Record<keyof typeof insightsEl, string> = {
   'reports.change': 'Change (Δ)',
   'reports.baseline': 'End of {year}: {value}',
   'reports.monthByMonth': 'Month by month',
-  'reports.month': 'Month',
   'reports.spendingTitle': 'Where the money went in {year}',
   'reports.ranking': 'Categories by spending',
   'reports.rankingHint':

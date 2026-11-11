@@ -1,11 +1,13 @@
 import { ChevronRight, Info, Pause, Plus, Repeat } from 'lucide-react'
+import { LoadError } from '@/components/LoadError'
+import { AddButton } from '@/components/AddButton'
 import { useToday } from '@/bootstrap/bootstrap'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { ListGroup } from '@/components/ListGroup'
 import { Money } from '@/components/Money'
 import { PageHeader } from '@/components/PageHeader'
-import { useSheet } from '@/components/manage/useSheet'
+import { useSheet } from '@/hooks/useSheet'
 import { ListSkeleton } from '@/components/skeletons'
 import { TagText } from '@/components/TagText'
 import { Badge } from '@/components/ui/badge'
@@ -32,16 +34,7 @@ export default function RecurringPage() {
     <>
       <PageHeader
         title={t('nav.recurring')}
-        actions={
-          <Button
-            size="icon-touch"
-            className="rounded-full"
-            aria-label={t('recurring.newTitle')}
-            onClick={() => open(null)}
-          >
-            <Plus aria-hidden />
-          </Button>
-        }
+        actions={<AddButton label={t('recurring.newTitle')} onClick={() => open(null)} />}
       />
       <details className="group mb-4 rounded-2xl border bg-card px-3.5 py-2.5 text-sm shadow-card">
         <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 font-medium [&::-webkit-details-marker]:hidden">
@@ -51,7 +44,9 @@ export default function RecurringPage() {
         <p className="mt-2 text-muted-foreground">{t('recurring.intro')}</p>
       </details>
 
-      {rules.isPending ? (
+      {rules.isError && !rules.data ? (
+        <LoadError onRetry={() => void rules.refetch()} />
+      ) : rules.isPending ? (
         <ListSkeleton rows={4} />
       ) : !items.length ? (
         <EmptyState

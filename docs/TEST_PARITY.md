@@ -9,8 +9,9 @@ Every test function of the old app (`C:\Users\fotis\code\Vibe-Budgeting\tests`, 
 | Status | Count |
 | --- | --- |
 | PORTED | 205 |
+| PORTED (frontend) | 3 |
 | PARTIAL | 0 |
-| FRONTEND-ONLY | 3 |
+| FRONTEND-ONLY | 0 |
 | MISSING | 0 |
 
 PORTED = a real new backend test asserts the same facts (HTML assertions became JSON assertions, noted per row). PARTIAL = the new test lacks a backend-checkable assertion of the old one. FRONTEND-ONLY = nothing to test in the backend; the frontend must guarantee it. MISSING = no counterpart.
@@ -32,9 +33,11 @@ The backend half is tested; the UI half is listed in the Notes column: `test_das
 
 ## FRONTEND-ONLY rows
 
-- `test_pwa_manifest.py::test_manifest_served_without_login`: The built SPA must ship `manifest.webmanifest` in dist, served without login with `Content-Type: application/manifest+json` (the backend registers the type; check against the built dist / Playwright).
-- `test_pwa_manifest.py::test_manifest_is_valid_standalone_manifest_with_icons_on_disk`: The manifest must parse as JSON with `display: "standalone"`, `name: "Vibe Budgeting"` (or the agreed new name), a non-empty `icons` list, and every `icons[].src` must exist in dist.
-- `test_pwa_manifest.py::test_login_page_links_manifest_and_apple_touch_icon`: `index.html` (the login screen is the SPA) must contain `rel="manifest"` pointing at `manifest.webmanifest` and `rel="apple-touch-icon"` pointing at `apple-touch-icon.png`, which must exist in dist.
+None left. The three `test_pwa_manifest.py` rows are now PORTED (frontend): `npm test` runs
+`frontend/scripts/pwa-check.mjs`, which builds the SPA into a temporary folder, serves it with the real backend
+(throwaway database) and asserts what the old tests asserted on the served output; `frontend/src/test/pwa.test.ts`
+checks the source files and `backend/tests/test_app.py::test_pwa_files_are_served_without_login_with_their_types`
+the content types.
 
 The backend also has many tests with no old counterpart (auth contract, expense/income/category/account/transfer/recurring validation, bootstrap, SPA serving, jobs, settings API, shared API, extra reports/budget/investments cases, export/import error paths).
 
@@ -148,9 +151,9 @@ The backend also has many tests with no old counterpart (auth contract, expense/
 | `test_price_fetch_gating.py::test_investments_panel_fetches_live_prices` | investments (prices) | `test_price_fetch_gating.py::test_investments_panel_fetches_live_prices` | PORTED | GET /api/investments (live by default); also asserts the exact call arguments (cache allowed). |
 | `test_price_fetch_gating.py::test_refresh_param_fetches_live_prices_on_other_panels` | investments (prices) | `test_price_fetch_gating.py::test_refresh_param_fetches_live_prices_on_other_panels` | PORTED | `refresh_prices` links -> `?live=false&refresh_crypto=true&refresh_stocks=true`; asserts the force-past-cache flag. |
 | `test_price_fetch_gating.py::test_investments_data_shows_dash_not_zero_when_unloaded` | investments (prices) | `test_price_fetch_gating.py::test_investments_data_shows_dash_not_zero_when_unloaded` | PORTED | HTML dash and `data-prices-loaded="0"` -> `prices_loaded: false` and null value/P&L fields; `total_invested` still returned (20010.0 / 1501.5). FRONTEND must show a dash for null values and force a live reload when `prices_loaded` is false. |
-| `test_pwa_manifest.py::test_manifest_served_without_login` | frontend (PWA) | n/a (frontend) | FRONTEND-ONLY | FRONTEND-ONLY. The built SPA must ship `manifest.webmanifest` in dist, served without login with `Content-Type: application/manifest+json` (the backend registers the type; check against the built dist / Playwright). |
-| `test_pwa_manifest.py::test_manifest_is_valid_standalone_manifest_with_icons_on_disk` | frontend (PWA) | n/a (frontend) | FRONTEND-ONLY | FRONTEND-ONLY. The manifest must parse as JSON with `display: "standalone"`, `name: "Vibe Budgeting"` (or the agreed new name), a non-empty `icons` list, and every `icons[].src` must exist in dist. |
-| `test_pwa_manifest.py::test_login_page_links_manifest_and_apple_touch_icon` | frontend (PWA) | n/a (frontend) | FRONTEND-ONLY | FRONTEND-ONLY. `index.html` (the login screen is the SPA) must contain `rel="manifest"` pointing at `manifest.webmanifest` and `rel="apple-touch-icon"` pointing at `apple-touch-icon.png`, which must exist in dist. |
+| `test_pwa_manifest.py::test_manifest_served_without_login` | frontend (PWA) | `frontend/scripts/pwa-check.mjs` ("manifest is served without login", "Content-Type is application/manifest+json") + `backend/tests/test_app.py::test_pwa_files_are_served_without_login_with_their_types` | PORTED (frontend) | Built SPA served by the real backend (temp build + temp DB, run by `npm test`): GET `/manifest.webmanifest` without a session -> 200, `application/manifest+json`. The backend test pins the type registration (also on Windows). |
+| `test_pwa_manifest.py::test_manifest_is_valid_standalone_manifest_with_icons_on_disk` | frontend (PWA) | `frontend/scripts/pwa-check.mjs` ("manifest display/name/icons" checks) + `frontend/src/test/pwa.test.ts` | PORTED (frontend) | Served manifest parses as JSON: `display: "standalone"`, `name: "Vibe Budgeting"`, non-empty `icons`; every `icons[].src` exists in the build and is served as `image/png`. |
+| `test_pwa_manifest.py::test_login_page_links_manifest_and_apple_touch_icon` | frontend (PWA) | `frontend/scripts/pwa-check.mjs` ("/ and /login link rel=manifest / apple-touch-icon") + `frontend/src/test/pwa.test.ts` | PORTED (frontend) | Served `/` and `/login` (the SPA's index.html) link `rel="manifest"` -> `/manifest.webmanifest` and `rel="apple-touch-icon"` -> `/icons/apple-touch-icon.png`, which is served. |
 | `test_recurring_intervals.py::test_weekly_occurrences_step_by_whole_weeks` | recurring | `test_recurring_intervals.py::test_weekly_occurrences_step_by_whole_weeks` | PORTED | 1:1 |
 | `test_recurring_intervals.py::test_monthly_occurrences_clamp_to_short_months` | recurring | `test_recurring_intervals.py::test_monthly_occurrences_clamp_to_short_months` | PORTED | 1:1 |
 | `test_recurring_intervals.py::test_every_three_months_and_times_cap` | recurring | `test_recurring_intervals.py::test_every_three_months_and_times_cap` | PORTED | 1:1 |

@@ -22,8 +22,7 @@ export const reportKeys = createKeys('reports')
 export function useOverview(year: number, account: number | null) {
   return useQuery({
     queryKey: reportKeys.custom('overview', { year, account }),
-    queryFn: () =>
-      api.get<Overview>('/reports/overview', { params: { year, account: account ?? 'all' } }),
+    queryFn: () => api.get<Overview>('/reports/overview', { params: { year, account: account ?? 'all' } }),
     placeholderData: keepPreviousData,
   })
 }

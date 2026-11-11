@@ -60,17 +60,3 @@ export function formatAxisMoney(value: number, currency: '€' | '$', lang: Lang
   const sign = value < 0 && body !== '0' ? '-' : ''
   return currency === '$' ? `${sign}$${body}` : `${sign}${body} €`
 }
-
-/**
- * Month name in the nominative ("Ιανουάριος", not "Ιανουαρίου"): Chromium
- * formats `{ month: 'long' }` alone in the genitive for Greek, while the
- * month+year pattern uses the standalone form.
- */
-export function monthNominative(year: number, month: number, lang: Lang): string {
-  const d = new Date(year, month - 1, 1)
-  const part = new Intl.DateTimeFormat(LOCALES[lang], { month: 'long', year: 'numeric' })
-    .formatToParts(d)
-    .find((p) => p.type === 'month')
-  const name = part?.value ?? String(month)
-  return name.charAt(0).toLocaleUpperCase(LOCALES[lang]) + name.slice(1)
-}

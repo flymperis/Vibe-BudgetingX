@@ -1,0 +1,24 @@
+# Only frontend/ (sources) and backend/requirements.txt + backend/vbx go into the image.
+.git
+.gitignore
+.claude
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+backend/.venv
+backend/tests
+frontend/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+frontend/screenshots
+parity
+docs
+budget-data
+data
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/secret_key
+**/.env

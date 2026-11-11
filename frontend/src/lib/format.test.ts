@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAge, formatAxisMoney, formatPercent, formatQuantity, monthNominative } from './format'
+import { formatAge, formatAxisMoney, formatPercent, formatQuantity } from './format'
 
 describe('formatQuantity', () => {
   it('keeps up to N significant digits like "%.6g" / "%.4g", in the user language', () => {
@@ -37,12 +37,5 @@ describe('formatAxisMoney', () => {
     expect(formatAxisMoney(-800, '€', 'el')).toBe('-800 €')
     expect(formatAxisMoney(12000, '$', 'en')).toBe('$12k')
     expect(formatAxisMoney(2_500_000, '€', 'en')).toBe('2.5M €')
-  })
-})
-
-describe('monthNominative', () => {
-  it('gives the nominative month name', () => {
-    expect(monthNominative(2026, 1, 'el')).toBe('Ιανουάριος')
-    expect(monthNominative(2026, 11, 'en')).toBe('November')
   })
 })

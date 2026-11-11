@@ -1,11 +1,11 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { useState } from 'react'
 import { RouterProvider } from 'react-router'
 import { setUnauthorizedHandler } from '@/api/client'
 import { markLoggedOut, registerCsrfLoader } from '@/auth/session'
 import { ConfirmProvider } from '@/components/ConfirmProvider'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { installSheetHistory } from '@/hooks/useBackToClose'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { createQueryClient } from './query-client'
 import { createAppRouter } from './router'
@@ -16,11 +16,19 @@ function createApp() {
   // A 401 from any endpoint marks the session as logged out; <RequireAuth>
   // then redirects to /login?next=<current page>.
   setUnauthorizedHandler(() => markLoggedOut(queryClient))
+  // Before the router: the back button closes sheets without the router noticing.
+  installSheetHistory()
   return { queryClient, router: createAppRouter() }
 }
 
+// One instance per page load. Not useState(createApp): StrictMode runs that
+// initializer twice in dev and keeps the first result, so the 401 handler and
+// the CSRF loader registered by the second call would point at a discarded client.
+let app: ReturnType<typeof createApp> | null = null
+const getApp = () => (app ??= createApp())
+
 export function App() {
-  const [{ queryClient, router }] = useState(createApp)
+  const { queryClient, router } = getApp()
   const isDesktop = useIsDesktop()
   return (
     <QueryClientProvider client={queryClient}>

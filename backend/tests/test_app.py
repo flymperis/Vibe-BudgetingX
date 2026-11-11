@@ -55,6 +55,25 @@ def test_spa_is_served_with_index_fallback(tmp_path):
     assert spa.get("/static/banks/eurobank.png").headers["content-type"] == "image/png"
 
 
+def test_pwa_files_are_served_without_login_with_their_types(tmp_path):
+    """Old test_pwa_manifest.py::test_manifest_served_without_login: the manifest
+    is public (the login screen links it) and typed application/manifest+json,
+    also on Windows where the registry does not know .webmanifest."""
+    (tmp_path / "index.html").write_text("<!doctype html>", encoding="utf-8")
+    (tmp_path / "manifest.webmanifest").write_text('{"name": "Vibe Budgeting"}', encoding="utf-8")
+    (tmp_path / "icons").mkdir()
+    (tmp_path / "icons" / "apple-touch-icon.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (tmp_path / "favicon.ico").write_bytes(b"\x00\x00\x01\x00")
+    spa = TestClient(vb_main.create_app(static_dir=tmp_path))
+
+    resp = spa.get("/manifest.webmanifest")  # no session cookie
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].split(";")[0] == "application/manifest+json"
+    assert resp.json()["name"] == "Vibe Budgeting"
+    assert spa.get("/icons/apple-touch-icon.png").headers["content-type"] == "image/png"
+    assert spa.get("/favicon.ico").headers["content-type"] == "image/x-icon"
+
+
 def test_no_spa_folder_means_no_catch_all(client):
     assert client.get("/").status_code == 404
 

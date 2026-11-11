@@ -1,21 +1,27 @@
 import { NavLink } from 'react-router'
-import { useMonthSearch } from '@/hooks/useMonth'
+import { MONTH_PARAM, useKeptSearch } from '@/hooks/useMonth'
 import { useT, type MessageKey } from '@/i18n'
 import { cn } from '@/lib/utils'
 
-/** Segmented sub-navigation between sibling routes (reports, investments). */
+/**
+ * Segmented sub-navigation between sibling routes (reports, investments).
+ * Switching tabs keeps the search params named in `keep` (default: the month).
+ */
 export function TabLinks({
   tabs,
   label,
+  keep = [MONTH_PARAM],
   className,
 }: {
   tabs: readonly { path: string; label: MessageKey }[]
   /** Accessible name of the navigation. */
   label: string
+  /** Search params carried over to the other tabs. */
+  keep?: readonly string[]
   className?: string
 }) {
   const t = useT()
-  const search = useMonthSearch()
+  const search = useKeptSearch(keep)
   return (
     <nav
       aria-label={label}

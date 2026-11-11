@@ -1,9 +1,12 @@
 import { ArrowLeftRight, Minus, PiggyBank, Plus, ReceiptText, Table2 } from 'lucide-react'
+import { LoadError } from '@/components/LoadError'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQuickAdd } from '@/app/quick-add'
 import { useSession } from '@/auth/session'
 import { useToday } from '@/bootstrap/bootstrap'
+import { Avatar } from '@/components/Avatar'
+import { AccountBalancesList, BalanceScopeHint } from '@/components/AccountBalancesList'
 import { HeroCard } from '@/components/Cards'
 import { IconTile } from '@/components/CategoryIcon'
 import { ListGroup, ListRow, SectionHeader } from '@/components/ListGroup'
@@ -17,10 +20,9 @@ import { ListSkeleton } from '@/components/skeletons'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMonth, useMonthSearch } from '@/hooks/useMonth'
 import { useLang, useT } from '@/i18n'
-import { fullDateLabel, monthLabel } from '@/lib/dates'
+import { monthLabel } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { useHome } from './api'
-import { BalancesList } from './BalancesList'
 import { HomeBudgetCard } from './HomeBudgetCard'
 
 const RECENT_COUNT = 5
@@ -38,7 +40,7 @@ export default function HomePage() {
   const recent = useEntryList('expense', { month, categoryId: null })
   const recentRows = flattenPages(recent.data).slice(0, RECENT_COUNT)
   const actions = useEntryActions()
-  const initial = session.data?.user?.username?.charAt(0) ?? ''
+  const username = session.data?.user?.username
   const data = home.data
 
   return (
@@ -46,16 +48,7 @@ export default function HomePage() {
       <PageHeader
         title={t('nav.home')}
         eyebrow={monthLabel(month, lang)}
-        actions={
-          initial ? (
-            <span
-              aria-hidden
-              className="grid size-10 place-items-center rounded-full bg-primary text-base font-semibold text-primary-foreground uppercase"
-            >
-              {initial}
-            </span>
-          ) : null
-        }
+        actions={username ? <Avatar name={username} me /> : null}
       />
       <MonthSwitcher className="mb-2 -ml-2" />
 
@@ -71,6 +64,8 @@ export default function HomePage() {
         >
           <p className="mt-3 text-[11px] opacity-75">{t('home.intro')}</p>
         </HeroCard>
+      ) : home.isError ? (
+        <LoadError onRetry={() => void home.refetch()} className="py-8" />
       ) : (
         <Skeleton className="h-44 w-full rounded-3xl" />
       )}
@@ -96,17 +91,35 @@ export default function HomePage() {
 
       {data?.budget_card ? <HomeBudgetCard card={data.budget_card} month={data.month} /> : null}
 
-      <SectionHeader title={t('home.balances')} />
+      <SectionHeader title={t('accounts.balances')} />
       {data ? (
         <>
-          <BalancesList home={data} />
-          <p className="mx-1 mt-2 text-xs text-muted-foreground">
-            {data.balance_scope === 'today'
-              ? t('home.scopeToday')
-              : t('home.scopeMonthEnd', { date: fullDateLabel(data.balance_as_of, lang, '0000-00-00') })}
-          </p>
+          <AccountBalancesList
+            accounts={data.accounts}
+            totals={data}
+            hasCards={data.has_cards}
+            payTo={(a) => ({ pathname: '/transfers', search: `?pay_card=${a.id}&month=${data.month}` })}
+            empty={
+              <div className="rounded-2xl border bg-card px-4 py-5 text-center text-sm text-muted-foreground shadow-card">
+                {t('accounts.none')}{' '}
+                <Link
+                  to="/settings/accounts"
+                  className="font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  {t('accounts.add')}
+                </Link>
+              </div>
+            }
+          />
+          {data.accounts.length ? (
+            <BalanceScopeHint
+              throughToday={data.balance_scope === 'today'}
+              asOf={data.balance_as_of}
+              className="mt-2"
+            />
+          ) : null}
         </>
-      ) : (
+      ) : home.isError ? null : (
         <ListSkeleton rows={3} />
       )}
 

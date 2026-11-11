@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { errorMessage } from '@/app/query-client'
 import { AmountInput } from '@/components/Amount'
 import { ChipPicker } from '@/components/ChipPicker'
@@ -63,6 +64,7 @@ export function SettleForm({
   const id = useId()
   const isDesktop = useIsDesktop()
   const add = useAddPayment()
+  const lock = useMutationLock(add)
   const [state, setState] = useState<SettleFormState>(() =>
     initialSettleState(
       group,
@@ -84,10 +86,10 @@ export function SettleForm({
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        if (canSave)
+        if (canSave && !add.isPending && lock.take())
           add.mutate({ groupId: group.id, body: buildSettlementBody(state, me) }, { onSuccess: onDone })
       }}
-      className="min-w-0 pb-1"
+      className="pb-1"
     >
       <FieldLabel htmlFor={`${id}-amount`} className="mt-1">
         {t('common.amount')}

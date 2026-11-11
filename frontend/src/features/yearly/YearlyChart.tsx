@@ -1,6 +1,7 @@
 /** Income vs expenses per month (Recharts; lazy-loaded by YearlyPage). */
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { useLocale, useT } from '@/i18n'
+import { useLang, useT } from '@/i18n'
+import { formatAxisMoney } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 
 export interface YearlyChartPoint {
@@ -15,8 +16,7 @@ const EXPENSES = 'var(--chart-3)'
 
 export default function YearlyChart({ points }: { points: YearlyChartPoint[] }) {
   const t = useT()
-  const locale = useLocale()
-  const compact = new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 })
+  const lang = useLang()
 
   return (
     <figure>
@@ -51,7 +51,7 @@ export default function YearlyChart({ points }: { points: YearlyChartPoint[] }) 
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-              tickFormatter={(v: number) => compact.format(v)}
+              tickFormatter={(v: number) => formatAxisMoney(v, '€', lang)}
             />
             <Tooltip
               cursor={{ fill: 'var(--muted)', opacity: 0.6 }}

@@ -1,4 +1,6 @@
 import { Pencil, Plus, Users } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
+import { AddButton } from '@/components/AddButton'
 import { useState, type FormEvent } from 'react'
 import { errorMessage } from '@/app/query-client'
 import { HeroCard } from '@/components/Cards'
@@ -26,7 +28,8 @@ import { memberNames } from './labels'
 import { NewGroupSheet } from './NewGroupSheet'
 import { PersonSheet } from './PersonSheet'
 import { useGroupNav } from './nav'
-import { Avatar, Hint, Tag } from './SharedParts'
+import { Avatar } from '@/components/Avatar'
+import { Hint, Tag } from './SharedParts'
 
 export function SharedOverviewScreen() {
   const t = useT()
@@ -37,12 +40,7 @@ export function SharedOverviewScreen() {
     <>
       <PageHeader
         title={t('nav.shared')}
-        actions={
-          <Button size="touch" onClick={() => setNewGroupOpen(true)}>
-            <Plus aria-hidden />
-            <span className="max-sm:sr-only">{t('shared.newGroup')}</span>
-          </Button>
-        }
+        actions={<AddButton label={t('shared.newGroup')} onClick={() => setNewGroupOpen(true)} />}
       />
       {overview.isPending ? (
         <div className="space-y-4">
@@ -132,10 +130,10 @@ function OverviewBody({ data, onNewGroup }: { data: SharedOverview; onNewGroup: 
                 to={groupTo(g.id)}
                 icon={<IconTile icon={Users} tone="primary" />}
                 title={
-                  <>
-                    {g.name}
+                  <span className="flex min-w-0 items-center">
+                    <span className="truncate">{g.name}</span>
                     {g.shared_with_users > 0 ? <Tag tone="primary">{t('shared.sharedTag')}</Tag> : null}
-                  </>
+                  </span>
                 }
                 subtitle={memberNames(g.member_names, t).join(', ')}
                 trailing={<GroupNet value={g.my_net} />}
@@ -246,10 +244,13 @@ function Invitations({ data }: { data: SharedOverview }) {
 function AddPeopleForm() {
   const t = useT()
   const add = useAddPeople()
+  const lock = useMutationLock(add)
   const [name, setName] = useState('')
   const submit = (e: FormEvent) => {
     e.preventDefault()
+    if (add.isPending) return
     if (!name.trim()) return
+    if (!lock.take()) return
     add.mutate(name, { onSuccess: () => setName('') })
   }
   return (

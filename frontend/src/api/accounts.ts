@@ -1,10 +1,11 @@
 /**
- * GET /api/accounts, shared by the Transfers screen and Settings → accounts
- * (both show balances for the selected month, like the old panels).
+ * GET /api/accounts: every account with its balance as of a month (Transfers,
+ * Settings -> accounts). `accounts` is a money domain, so `invalidateMoney`
+ * refreshes it after any expense / income / transfer / recurring / shared change.
  */
-import { useQuery, type QueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import { createKeys, invalidateDomains, invalidateMoney } from '@/api/keys'
+import { createKeys } from '@/api/keys'
 import type { Schema } from '@/api/types'
 
 export type AccountList = Schema<'AccountListOut'>
@@ -17,9 +18,4 @@ export function useAccounts(month?: string) {
     queryKey: accountKeys.list({ month: month ?? null }),
     queryFn: () => api.get<AccountList>('/accounts', { params: { month } }),
   })
-}
-
-/** Balances changed: every money screen plus the accounts list. */
-export function invalidateBalances(qc: QueryClient) {
-  return Promise.all([invalidateMoney(qc), invalidateDomains(qc, accountKeys.all)])
 }

@@ -1,15 +1,11 @@
 /**
- * Insights screens (Investments, Reports) against the REAL dev backend,
- * through the insights dev server (`npm run dev -- --port 5185 --strictPort`;
- * override with INSIGHTS_BASE_URL). Each test registers a fresh user.
+ * Insights screens (Investments, Reports) against the REAL backend (base URL
+ * from playwright.config.ts). Each test registers a fresh user.
  * Note: investments and the report overview ask the backend for live prices
  * (CoinGecko / Yahoo), so these tests need the backend to have internet; the
  * assertions do not depend on the price values.
  */
 import { expect, test, type Page } from '@playwright/test'
-
-const BASE = process.env.INSIGHTS_BASE_URL ?? 'http://127.0.0.1:5185'
-test.use({ baseURL: BASE })
 
 const PASSWORD = 'insights-e2e-pass-1'
 
@@ -73,12 +69,18 @@ test('investments: add, edit and delete a crypto buy; stocks tab defaults', asyn
   await expect(history.getByText('582,50 €')).toBeVisible()
 
   // Tab switch does not ask for prices again
-  await page.getByRole('navigation', { name: 'Είδη επενδύσεων' }).getByRole('link', { name: 'Μετοχές' }).click()
+  await page
+    .getByRole('navigation', { name: 'Είδη επενδύσεων' })
+    .getByRole('link', { name: 'Μετοχές' })
+    .click()
   await expect(page.getByText('Καμία συναλλαγή ακόμα')).toBeVisible()
   await page.getByRole('button', { name: 'Νέα συναλλαγή' }).first().click()
   await expect(page.getByRole('dialog').getByLabel('Broker')).toHaveValue('Freedom24')
   await page.keyboard.press('Escape')
-  await page.getByRole('navigation', { name: 'Είδη επενδύσεων' }).getByRole('link', { name: 'Crypto' }).click()
+  await page
+    .getByRole('navigation', { name: 'Είδη επενδύσεων' })
+    .getByRole('link', { name: 'Crypto' })
+    .click()
   expect(priceCalls.filter((s) => s.includes('refresh'))).toEqual([])
 
   // Refresh prices = forced lookup for crypto only
@@ -135,13 +137,23 @@ test('reports: overview filters, spending pivot, tags and portfolio charts', asy
   await page.getByRole('button', { name: 'Προηγούμενο έτος' }).click()
   await expect(page).toHaveURL(new RegExp(`year=${year - 1}`))
 
-  // Spending keeps the chosen year for the session
-  await page.getByRole('navigation', { name: 'Ενότητες αναφορών' }).getByRole('link', { name: 'Έξοδα' }).click()
+  // Spending keeps the chosen year (the report tabs carry ?year=); the link is
+  // re-rendered after the URL changes, so wait for it before clicking.
+  const spendingTab = page
+    .getByRole('navigation', { name: 'Ενότητες αναφορών' })
+    .getByRole('link', { name: 'Έξοδα' })
+  await expect(spendingTab).toHaveAttribute('href', new RegExp(`year=${year - 1}`))
+  await spendingTab.click()
   await expect(page.getByRole('combobox', { name: 'Διάλεξε έτος' })).toHaveText(String(year - 1))
   await expect(page.getByRole('table').getByText('-30,00 €').first()).toBeVisible()
   await page.getByRole('button', { name: 'Επόμενο έτος' }).click()
   await expect(page.getByRole('table').getByText('-120,40 €').first()).toBeVisible()
-  await expect(page.getByText('νέα φέτος').or(page.getByText(/σε σχέση με το/)).first()).toBeVisible()
+  await expect(
+    page
+      .getByText('νέα φέτος')
+      .or(page.getByText(/σε σχέση με το/))
+      .first(),
+  ).toBeVisible()
 
   // Tags list -> one tag -> back
   await page.goto('/reports/tags')

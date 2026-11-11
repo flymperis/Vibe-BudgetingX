@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState } from 'react'
 import { errorMessage } from '@/app/query-client'
 import { useBootstrap, useToday } from '@/bootstrap/bootstrap'
@@ -8,7 +9,7 @@ import { ChipPicker } from '@/components/ChipPicker'
 import { useConfirm } from '@/components/confirm'
 import { DatePicker } from '@/components/DatePicker'
 import { FieldError, FieldLabel } from '@/components/FormField'
-import { AccountAvatar } from '@/components/manage/AccountAvatar'
+import { AccountAvatar } from '@/components/AccountAvatar'
 import { ResponsiveSheet } from '@/components/ResponsiveSheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,6 +43,7 @@ export function RecurringSheet({ open, onOpenChange, rule }: RecurringSheetProps
   const isDesktop = useIsDesktop()
   const confirm = useConfirm()
   const save = useSaveRecurring()
+  const lock = useMutationLock(save)
   const del = useDeleteRecurring()
   const ids = {
     type: useId(),
@@ -78,11 +80,13 @@ export function RecurringSheet({ open, onOpenChange, rule }: RecurringSheetProps
   }
 
   const submit = () => {
+    if (save.isPending) return
     const issue = validateRecurring(form, isNew)
     if (issue) {
       setProblem(t(issue))
       return
     }
+    if (!lock.take()) return
     save.mutate(
       { id: rule?.id ?? null, body: buildRecurringBody(form) },
       { onSuccess: () => onOpenChange(false) },

@@ -6,32 +6,21 @@ import { ConfirmProvider } from '@/components/ConfirmProvider'
 import { renderWithProviders } from '@/test/render'
 import type { BudgetPanel } from './api'
 import BudgetPage from './BudgetPage'
+import { json, mockDesktop } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-const originalMatchMedia = window.matchMedia
+let restoreMatchMedia = () => {}
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
   fetchMock.mockReset()
   setCsrfToken('tok')
   // Desktop layout: dialogs and typed amount inputs instead of the drawer + keypad.
-  window.matchMedia = (query: string) =>
-    ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    }) as MediaQueryList
+  restoreMatchMedia = mockDesktop()
 })
 afterEach(() => {
   vi.unstubAllGlobals()
-  window.matchMedia = originalMatchMedia
+  restoreMatchMedia()
 })
 
 const line = (
@@ -274,6 +263,6 @@ describe('Monthly budgets editor', () => {
     expect(within(dialog).getByText('μένει (σταθερό) 50,00 €')).toBeInTheDocument()
     await user.click(within(dialog).getByRole('button', { name: 'Συμπλήρωση' }))
     await waitFor(() => expect(screen.getByLabelText('Σούπερ μάρκετ')).toHaveValue('300'))
-    expect(screen.getByText(/συμπληρώθηκαν \(Σεπτέμβριος 2026\)/)).toBeInTheDocument()
+    expect(screen.getByText(/συμπληρώθηκαν από τα budget του Σεπτεμβρίου 2026/)).toBeInTheDocument()
   })
 })

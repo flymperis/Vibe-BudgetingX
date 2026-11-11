@@ -84,7 +84,7 @@ function PaymentDetail({
   }
 
   return (
-    <div className="min-w-0 pb-2">
+    <div className="pb-2">
       <div className="mb-3 text-center">
         <p className="text-[17px] font-semibold">{t('shared.paymentTitle', { from, to })}</p>
         <Money

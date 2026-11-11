@@ -2,13 +2,14 @@ import { CalendarX2 } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 import { useBootstrap } from '@/bootstrap/bootstrap'
 import { StatCard } from '@/components/Cards'
-import { formatPercent, monthNominative } from '@/components/insights/format'
+import { formatPercent } from '@/lib/format'
 import { EmptyState } from '@/components/EmptyState'
 import { ListGroup, ListRow, SectionHeader } from '@/components/ListGroup'
 import { Money } from '@/components/Money'
 import { CardSkeleton, ListSkeleton } from '@/components/skeletons'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useLang, useT } from '@/i18n'
+import { monthNameOf } from '@/lib/dates'
 import { amountClass, formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { useOverview, type CashFlowMonth } from './api'
@@ -129,9 +130,9 @@ export default function ReportsOverviewPage() {
             {cf.best_month && cf.worst_month ? (
               <p className="mt-3 border-t pt-3 text-[13px] text-muted-foreground">
                 {t('reports.bestWorst', {
-                  best: monthNominative(year, cf.best_month.month, lang),
+                  best: monthNameOf(cf.best_month.month, lang),
                   bestNet: formatMoney(cf.best_month.net, { signed: true }),
-                  worst: monthNominative(year, cf.worst_month.month, lang),
+                  worst: monthNameOf(cf.worst_month.month, lang),
                   worstNet: formatMoney(cf.worst_month.net, { signed: true }),
                 })}
               </p>
@@ -152,7 +153,12 @@ export default function ReportsOverviewPage() {
               amount={data.bank_balance}
               amountProps={{ tone: 'all' }}
             />
-            <ListRow title={t('reports.crypto')} subtitle="EUR" amount={data.crypto_value} amountProps={{ tone: 'all' }} />
+            <ListRow
+              title={t('reports.crypto')}
+              subtitle="EUR"
+              amount={data.crypto_value}
+              amountProps={{ tone: 'all' }}
+            />
             <ListRow
               title={t('reports.stocks')}
               subtitle={t('reports.quotedInUsd')}
@@ -196,7 +202,7 @@ function MonthRows({ months, year }: { months: CashFlowMonth[]; year: number }) 
       {active.map((m) => (
         <ListRow
           key={m.month}
-          title={monthNominative(year, m.month, lang)}
+          title={monthNameOf(m.month, lang)}
           subtitle={
             <span className="flex flex-wrap gap-x-3">
               <span>

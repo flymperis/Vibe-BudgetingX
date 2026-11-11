@@ -1,6 +1,6 @@
 import { ReceiptText } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
-import { formatPercent } from '@/components/insights/format'
+import { formatPercent } from '@/lib/format'
 import { SectionHeader } from '@/components/ListGroup'
 import { Money } from '@/components/Money'
 import { CardSkeleton, ListSkeleton } from '@/components/skeletons'
@@ -22,7 +22,7 @@ export default function ReportsSpendingPage() {
 
   return (
     <div className={cn('transition-opacity', query.isPlaceholderData && 'opacity-60')}>
-      <YearSwitcher year={year} onChange={setYear} className="-ml-2 mb-3" />
+      <YearSwitcher year={year} onChange={setYear} className="mb-3 -ml-2" />
       {query.isPending ? (
         <div role="status" aria-live="polite" className="space-y-4">
           <span className="sr-only">{t('common.loading')}</span>
@@ -56,11 +56,12 @@ function Ranking({ data }: { data: Spending }) {
   return (
     <>
       <Hint className="mx-0.5">
-        {c.has_previous
-          ? t('reports.rankingHintCompare', { prev: c.prev_year })
-          : t('reports.rankingHint')}
+        {c.has_previous ? t('reports.rankingHintCompare', { prev: c.prev_year }) : t('reports.rankingHint')}
       </Hint>
-      <ol aria-label={t('reports.ranking')} className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card">
+      <ol
+        aria-label={t('reports.ranking')}
+        className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card"
+      >
         {c.rows.map((row) => (
           <RankRow
             key={row.name}
@@ -95,7 +96,11 @@ function Pivot({ data }: { data: Spending }) {
   if (!p.rows.length)
     return (
       <div className="rounded-2xl border bg-card shadow-card">
-        <EmptyState icon={ReceiptText} title={t('reports.noExpensesInYear', { year: data.year })} className="py-8" />
+        <EmptyState
+          icon={ReceiptText}
+          title={t('reports.noExpensesInYear', { year: data.year })}
+          className="py-8"
+        />
       </div>
     )
   // Headers come as "01.Jan"; the month number gives the localized name.
@@ -153,7 +158,9 @@ function Pivot({ data }: { data: Spending }) {
                   <Money value={row.total} tone="positive" />
                 </td>
                 <td className={cn(num, 'bg-muted/40')}>
-                  {row.avg !== null && row.avg !== undefined ? <Money value={row.avg} tone="positive" /> : null}
+                  {row.avg !== null && row.avg !== undefined ? (
+                    <Money value={row.avg} tone="positive" />
+                  ) : null}
                 </td>
               </tr>
             ))}
@@ -180,7 +187,11 @@ function Pivot({ data }: { data: Spending }) {
           </tfoot>
         </table>
       </div>
-      {avgTitle ? <p className="mx-0.5 mt-2 text-xs text-muted-foreground">{t('reports.avg')}: {avgTitle}</p> : null}
+      {avgTitle ? (
+        <p className="mx-0.5 mt-2 text-xs text-muted-foreground">
+          {t('reports.avg')}: {avgTitle}
+        </p>
+      ) : null}
     </>
   )
 }

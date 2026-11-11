@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState } from 'react'
 import { errorMessage } from '@/app/query-client'
 import { CategoryIcon } from '@/components/CategoryIcon'
@@ -24,6 +25,7 @@ export function CategorySheet({ kind, open, onOpenChange, category }: CategorySh
   const t = useT()
   const confirm = useConfirm()
   const save = useSaveCategory(kind)
+  const lock = useMutationLock(save)
   const del = useDeleteCategory(kind)
   const nameId = useId()
   const blockedId = useId()
@@ -31,10 +33,12 @@ export function CategorySheet({ kind, open, onOpenChange, category }: CategorySh
   const [problem, setProblem] = useState<string | null>(null)
 
   const submit = () => {
+    if (save.isPending) return
     if (!name.trim()) {
       setProblem(t('settings.errName'))
       return
     }
+    if (!lock.take()) return
     save.mutate({ id: category?.id ?? null, name: name.trim() }, { onSuccess: () => onOpenChange(false) })
   }
   const remove = async () => {

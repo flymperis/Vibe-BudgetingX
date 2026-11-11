@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { AmountEntry, AmountKeypad } from '@/components/Amount'
 import { DetailRow, FieldError } from '@/components/FormField'
 import { Money } from '@/components/Money'
@@ -79,6 +80,8 @@ function SheetBody({
   const [localError, setLocalError] = useState<string | null>(null)
   const override = useSaveOverride()
   const defaults = useSaveDefaults()
+  const overrideLock = useMutationLock(override)
+  const defaultsLock = useMutationLock(defaults)
 
   const value = mode === 'month' ? monthValue : defaultValue
   const setValue = (v: string) => {
@@ -99,8 +102,10 @@ function SheetBody({
         setLocalError(t('budget.enterAmount'))
         return
       }
+      if (!overrideLock.take()) return
       override.mutate({ month, category_id: target.id, amount: monthValue }, { onSuccess: onDone })
     } else {
+      if (!defaultsLock.take()) return
       defaults.mutate(singleDefaultPayload(target.id, defaultValue, fixed), { onSuccess: onDone })
     }
   }

@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { errorMessage } from '@/app/query-client'
 import { AmountInput } from '@/components/Amount'
 import { CategoryGlyph } from '@/components/CategoryIcon'
@@ -76,6 +77,7 @@ export function BillForm({
   const id = useId()
   const isDesktop = useIsDesktop()
   const save = useSaveBill()
+  const lock = useMutationLock(save)
   const [state, setState] = useState<BillFormState>(() =>
     initialBillState(group, {
       payload: bill?.payload ?? null,
@@ -120,7 +122,9 @@ export function BillForm({
   const canSave = totalCents > 0 && result.ok && state.paidBy !== null && !save.isPending
 
   const submit = () => {
+    if (save.isPending) return
     if (!canSave) return
+    if (!lock.take()) return
     save.mutate(
       { groupId: group.id, billId: bill?.id, body: buildBillBody(state, memberIds) },
       { onSuccess: onDone },
@@ -148,7 +152,7 @@ export function BillForm({
         e.preventDefault()
         submit()
       }}
-      className="min-w-0 pb-1"
+      className="pb-1"
     >
       <FieldLabel htmlFor={`${id}-amount`} className="mt-1">
         {t('common.amount')}

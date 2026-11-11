@@ -1,9 +1,11 @@
 import { Plus, Tags } from 'lucide-react'
+import { LoadError } from '@/components/LoadError'
+import { AddButton } from '@/components/AddButton'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { EmptyState } from '@/components/EmptyState'
 import { ListGroup, ListRow } from '@/components/ListGroup'
 import { PageHeader } from '@/components/PageHeader'
-import { useSheet } from '@/components/manage/useSheet'
+import { useSheet } from '@/hooks/useSheet'
 import { ListSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { useT } from '@/i18n'
@@ -24,21 +26,14 @@ export function CategoriesManager({ kind, title }: { kind: CategoryKind; title: 
       <PageHeader
         title={title}
         backTo="/settings"
-        actions={
-          <Button
-            size="icon-touch"
-            className="rounded-full"
-            aria-label={t('settings.addCategory')}
-            onClick={() => open(null)}
-          >
-            <Plus aria-hidden />
-          </Button>
-        }
+        actions={<AddButton label={t('settings.addCategory')} onClick={() => open(null)} />}
       />
       <p className="-mt-2 mb-4 text-sm text-muted-foreground">
         {kind === 'expense' ? t('settings.expenseCategoriesHelp') : t('settings.incomeCategoriesHelp')}
       </p>
-      {list.isPending ? (
+      {list.isError && !list.data ? (
+        <LoadError onRetry={() => void list.refetch()} />
+      ) : list.isPending ? (
         <ListSkeleton rows={6} />
       ) : !items.length ? (
         <EmptyState

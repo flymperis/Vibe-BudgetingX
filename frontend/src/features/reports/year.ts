@@ -1,10 +1,9 @@
-/** Report year: `?year=` in the URL, remembered for the session so the sections share it. */
+/** Report year: `?year=` in the URL (the report tabs carry it over, see ReportsLayout). */
 import { useSearchParams } from 'react-router'
 import { useBootstrap } from '@/bootstrap/bootstrap'
 
 export const MIN_YEAR = 2000
 export const MAX_YEAR = 2100
-const STORAGE_KEY = 'vbx.reports.year'
 
 /** Old rule: blank, invalid or outside 2000-2100 = the current year. */
 export function normalizeYear(raw: string | null | undefined, currentYear: number): number {
@@ -14,24 +13,11 @@ export function normalizeYear(raw: string | null | undefined, currentYear: numbe
   return year >= MIN_YEAR && year <= MAX_YEAR ? year : currentYear
 }
 
-function stored(): string | null {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
 export function useReportYear() {
   const [params, setParams] = useSearchParams()
   const currentYear = Number(useBootstrap().today.slice(0, 4))
-  const year = normalizeYear(params.get('year') ?? stored(), currentYear)
+  const year = normalizeYear(params.get('year'), currentYear)
   const setYear = (next: number) => {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, String(next))
-    } catch {
-      /* private mode */
-    }
     setParams(
       (p) => {
         const copy = new URLSearchParams(p)

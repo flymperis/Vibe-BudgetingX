@@ -1,13 +1,8 @@
 /**
- * "manage" group flows against the REAL backend (http://127.0.0.1:5001) through
- * a dev server that proxies /api to it. Default: the group's own Vite on :5182
- * (`npm run dev -- --port 5182 --strictPort`); override with MANAGE_BASE_URL.
+ * "manage" group flows against the REAL backend (base URL from playwright.config.ts).
  * Each test registers a fresh throwaway user.
  */
 import { expect, test, type Page } from '@playwright/test'
-
-const BASE = process.env.MANAGE_BASE_URL ?? 'http://127.0.0.1:5182'
-test.use({ baseURL: BASE, locale: 'el-GR' })
 
 async function register(page: Page) {
   const username = `agent_manage_e2e_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`

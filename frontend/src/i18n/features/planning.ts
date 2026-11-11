@@ -21,7 +21,7 @@ export const planningEl = {
   'budget.monthRestored': 'Τα μηνιαία budget επανήλθαν',
   'budget.clearMonth': 'Καθαρισμός μήνα',
   'budget.clearMonthHint': 'Οι άλλοι μήνες μένουν ως έχουν.',
-  'budget.clearConfirmTitle': 'Να καθαριστεί το budget του μήνα ({month});',
+  'budget.clearConfirmTitle': 'Να καθαριστεί το budget του {month};',
   'budget.clearConfirmText': 'Οι άλλοι μήνες κρατούν τα budget τους. Μπορείς να το επαναφέρεις αργότερα.',
   'budget.monthCleared': 'Το budget του μήνα καθαρίστηκε',
   'budget.overTitleOne': '1 κατηγορία πάνω από το budget',
@@ -110,7 +110,7 @@ export const planningEl = {
   'budget.copyUnchanged': 'χωρίς αλλαγή',
   'budget.copyTotal': 'Σύνολο μετά τη συμπλήρωση',
   'budget.prefill': 'Συμπλήρωση',
-  'budget.prefilledFrom': 'Τα ποσά συμπληρώθηκαν ({month}). Έλεγξέ τα και πάτα Αποθήκευση.',
+  'budget.prefilledFrom': 'Τα ποσά συμπληρώθηκαν από τα budget του {month}. Έλεγξέ τα και πάτα Αποθήκευση.',
 
   // Summary
   'summary.netBalance': 'Υπόλοιπο λογαριασμών',
@@ -124,14 +124,6 @@ export const planningEl = {
   'summary.noBudget': 'Χωρίς budget',
   'summary.budgetOf': 'Budget {amount}',
   'summary.leftOf': 'μένουν {amount}',
-  'summary.balances': 'Υπόλοιπα',
-  'summary.balancesToday': 'με κινήσεις ως σήμερα',
-  'summary.balancesAt': 'στις {date}',
-  'summary.noAccounts': 'Δεν υπάρχουν λογαριασμοί ακόμα.',
-  'summary.cashTotal': 'Μετρητά & τράπεζες',
-  'summary.cardsTotal': 'Πιστωτικές κάρτες',
-  'summary.netTotal': 'Καθαρό (όλοι οι λογαριασμοί)',
-  'summary.cardAvailable': 'Διαθέσιμα {available} από {limit}',
 
   // Yearly
   'yearly.year': 'Έτος',
@@ -276,14 +268,6 @@ export const planningEn: Record<keyof typeof planningEl, string> = {
   'summary.noBudget': 'No budget',
   'summary.budgetOf': 'Budget {amount}',
   'summary.leftOf': '{amount} left',
-  'summary.balances': 'Balances',
-  'summary.balancesToday': 'movements through today',
-  'summary.balancesAt': 'as of {date}',
-  'summary.noAccounts': 'No accounts yet.',
-  'summary.cashTotal': 'Cash & bank',
-  'summary.cardsTotal': 'Credit cards',
-  'summary.netTotal': 'Net (all accounts)',
-  'summary.cardAvailable': '{available} available of {limit}',
 
   // Yearly
   'yearly.year': 'Year',

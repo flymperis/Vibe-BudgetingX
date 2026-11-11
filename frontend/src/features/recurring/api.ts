@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
-import { createKeys, qk } from '@/api/keys'
+import { createKeys, invalidateMoney } from '@/api/keys'
 import type { Schema } from '@/api/types'
-import { invalidateBalances } from '@/components/manage/accounts-api'
 import { translate } from '@/i18n'
 import type { RecurringIn } from './recurringForm'
 
@@ -23,8 +22,7 @@ export function useRecurringRules() {
 function useAfterChange() {
   const qc = useQueryClient()
   return () => {
-    void invalidateBalances(qc)
-    void qc.invalidateQueries({ queryKey: qk.bootstrap })
+    void invalidateMoney(qc)
   }
 }
 

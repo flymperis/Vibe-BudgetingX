@@ -9,10 +9,10 @@ import { PageHeader } from '@/components/PageHeader'
 import { CardSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useLang, useLocale, useT } from '@/i18n'
-import { monthShortName } from '@/lib/dates'
+import { useLang, useT } from '@/i18n'
+import { monthNameOf, monthShortName } from '@/lib/dates'
 import { cn } from '@/lib/utils'
-import { chartPoints, MAX_YEAR, nominativeMonth, MIN_YEAR, parseYear, useYearly, type Yearly } from './api'
+import { chartPoints, MAX_YEAR, MIN_YEAR, parseYear, useYearly, type Yearly } from './api'
 
 const YearlyChart = lazy(() => import('./YearlyChart'))
 
@@ -108,7 +108,6 @@ function deltaClass(v: number) {
 function YearlyBody({ data, currentMonth, stale }: { data: Yearly; currentMonth: string; stale: boolean }) {
   const t = useT()
   const lang = useLang()
-  const locale = useLocale()
   const ym = (m: number) => `${data.year}-${pad(m)}`
   const empty = data.rows.every((r) => r.income === 0 && r.expenses === 0)
 
@@ -187,7 +186,7 @@ function YearlyBody({ data, currentMonth, stale }: { data: Yearly; currentMonth:
                       isCurrent ? 'bg-muted' : 'bg-card',
                     )}
                   >
-                    {nominativeMonth(data.year, r.month, locale)}
+                    {monthNameOf(r.month, lang)}
                   </th>
                   <td className={cn('border-b px-3 py-3 text-right', isCurrent && 'bg-muted')}>
                     <Money value={r.income} tone="none" />

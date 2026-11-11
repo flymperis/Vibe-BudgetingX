@@ -1,4 +1,4 @@
-import type { Account } from '@/components/manage/accounts-api'
+import type { Account } from '@/api/accounts'
 import type { MessageKey } from '@/i18n'
 import { parseAmountInput } from '@/lib/amount'
 import type { AccountIn } from './api'

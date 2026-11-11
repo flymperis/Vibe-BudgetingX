@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
-import { createKeys, invalidateDomains, qk } from '@/api/keys'
+import { createKeys, invalidateDomains, invalidateMoney, qk } from '@/api/keys'
 import type { Schema } from '@/api/types'
-import { accountKeys, invalidateBalances, type Account } from '@/components/manage/accounts-api'
+import type { Account } from '@/api/accounts'
 import { translate } from '@/i18n'
 
 export const settingsKeys = createKeys('settings')
@@ -21,7 +21,7 @@ export function useSaveAccount() {
     meta: { toastErrors: false },
     onSuccess: (_d, vars) => {
       // Opening balances move every balance; names show up everywhere.
-      void invalidateBalances(qc)
+      void invalidateMoney(qc)
       void invalidateDomains(qc, settingsKeys.all)
       toast.success(translate(vars.id === null ? 'settings.accountAdded' : 'common.saved'))
     },
@@ -34,8 +34,8 @@ export function useDeleteAccount() {
     mutationFn: (id: number) => api.delete<Schema<'OkOut'>>(`/accounts/${id}`),
     meta: { toastErrors: false },
     onSuccess: () => {
-      void invalidateBalances(qc)
-      void invalidateDomains(qc, accountKeys.all, settingsKeys.all)
+      void invalidateMoney(qc)
+      void invalidateDomains(qc, settingsKeys.all)
       toast.success(translate('common.deleted'))
     },
   })

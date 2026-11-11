@@ -279,6 +279,7 @@ function NotificationsForm({ telegram }: { telegram: Telegram }) {
   const [problem, setProblem] = useState<string | null>(null)
   const save = useSaveNotifications()
   const submit = () => {
+    if (save.isPending) return
     const issue = validateNotify(form)
     if (issue) {
       setProblem(t(issue))

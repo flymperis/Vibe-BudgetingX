@@ -1,4 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { errorMessage } from '@/app/query-client'
 import { FieldError, FieldLabel } from '@/components/FormField'
 import { ResponsiveSheet } from '@/components/ResponsiveSheet'
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { useT } from '@/i18n'
 import { useCreateGroup, type Contact } from './api'
 import { useGroupNav } from './nav'
-import { ToggleChips } from './SharedParts'
+import { ToggleChips } from '@/components/ToggleChips'
 
 export function NewGroupSheet({
   open,
@@ -30,6 +31,7 @@ function NewGroupForm({ contacts, onDone }: { contacts: Contact[]; onDone: () =>
   const t = useT()
   const id = useId()
   const create = useCreateGroup()
+  const lock = useMutationLock(create)
   const { openGroup } = useGroupNav()
   const [name, setName] = useState('')
   const [memberIds, setMemberIds] = useState<number[]>([])
@@ -38,6 +40,8 @@ function NewGroupForm({ contacts, onDone }: { contacts: Contact[]; onDone: () =>
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
+    if (create.isPending) return
+    if (!lock.take()) return
     create.mutate(
       { name: name.trim(), member_ids: memberIds, usernames, new_members: newMembers },
       {
@@ -50,7 +54,7 @@ function NewGroupForm({ contacts, onDone }: { contacts: Contact[]; onDone: () =>
   }
 
   return (
-    <form onSubmit={submit} className="min-w-0">
+    <form onSubmit={submit}>
       <FieldLabel htmlFor={`${id}-name`} className="mt-1">
         {t('shared.groupName')}
       </FieldLabel>

@@ -44,11 +44,13 @@ function PersonForm({ person, onDone }: { person: Contact; onDone: () => void })
 
   const onRename = (e: FormEvent) => {
     e.preventDefault()
+    if (rename.isPending) return
     resetErrors()
     rename.mutate({ id: person.id, name: name.trim() }, { onSuccess: onDone })
   }
   const onLink = (e: FormEvent) => {
     e.preventDefault()
+    if (link.isPending) return
     resetErrors()
     link.mutate({ id: person.id, username: username.trim() }, { onSuccess: onDone })
   }
@@ -65,7 +67,7 @@ function PersonForm({ person, onDone }: { person: Contact; onDone: () => void })
   }
 
   return (
-    <div className="min-w-0 pb-2">
+    <div className="pb-2">
       <form onSubmit={onRename}>
         <FieldLabel htmlFor={`${id}-name`} className="mt-1">
           {t('shared.name')}

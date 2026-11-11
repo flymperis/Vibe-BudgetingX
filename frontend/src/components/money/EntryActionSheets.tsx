@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { useLang, useT } from '@/i18n'
 import { fullDateLabel, relativeDayLabel } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
-import { AccountAvatar } from './AccountAvatar'
+import { AccountAvatar } from '@/components/AccountAvatar'
 import { useDeleteEntry, type Entry } from './entries'
 import { EntrySheet } from './EntrySheet'
 
@@ -102,7 +102,7 @@ export function EntryActionSheets({
         }
       >
         {entry ? (
-          <div className="min-w-0">
+          <div>
             <div className="mt-1 mb-4 flex flex-col items-center text-center">
               <CategoryIcon name={entry.category_name} size="lg" className="mb-2.5" />
               <Money value={entry.amount} tone="positive" className="text-[32px] font-bold tracking-tight" />
@@ -115,7 +115,7 @@ export function EntryActionSheets({
             <DetailRow label={t('common.category')}>{entry.category_name}</DetailRow>
             <DetailRow label={t('common.account')}>
               <span className="inline-flex items-center gap-1.5">
-                <AccountAvatar name={entry.account_name} bank={bank} size="sm" fallback={false} />
+                <AccountAvatar name={entry.account_name} bank={bank} size="xs" fallback={false} />
                 {entry.account_name}
               </span>
             </DetailRow>

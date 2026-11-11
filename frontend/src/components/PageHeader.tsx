@@ -33,7 +33,9 @@ export function PageHeader({ title, eyebrow, actions, backTo, className }: PageH
           </Link>
         ) : null}
         {eyebrow ? <div className="text-[13px] text-muted-foreground">{eyebrow}</div> : null}
-        <h1 className="truncate text-[30px] leading-tight font-bold tracking-tight">{title}</h1>
+        <h1 className="line-clamp-2 text-[28px] leading-[1.15] font-bold tracking-tight text-balance break-words min-[400px]:text-[30px]">
+          {title}
+        </h1>
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>

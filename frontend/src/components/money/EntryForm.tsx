@@ -8,7 +8,7 @@ import { FieldLabel } from '@/components/FormField'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { useT } from '@/i18n'
 import { cn } from '@/lib/utils'
-import { AccountAvatar } from './AccountAvatar'
+import { AccountAvatar } from '@/components/AccountAvatar'
 import { DayPicker } from './DayPicker'
 import type { EntryKind } from './entries'
 import type { DraftError, EntryDraft } from './entry-form'
@@ -124,7 +124,7 @@ export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: E
           options={boot.accounts.map((a) => ({
             value: a.id,
             label: a.name,
-            icon: a.bank ? <AccountAvatar name={a.name} bank={a.bank} size="sm" /> : undefined,
+            icon: a.bank ? <AccountAvatar name={a.name} bank={a.bank} size="xs" /> : undefined,
           }))}
         />
       ) : (

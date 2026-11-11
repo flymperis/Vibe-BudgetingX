@@ -1,4 +1,5 @@
 import { Copy, Lock, LockOpen, Split } from 'lucide-react'
+import { useMutationLock } from '@/hooks/useMutationLock'
 import { useId, useState } from 'react'
 import { useConfirm } from '@/components/confirm'
 import { Panel } from '@/components/Cards'
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { errorMessage } from '@/app/query-client'
 import { useLang, useT, type TFunction } from '@/i18n'
 import { amountToText, sanitizeAmountTyping } from '@/lib/amount'
-import { monthLabel } from '@/lib/dates'
+import { monthLabelGenitive } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { useSaveDefaults, type BudgetPanel, type MonthSnapshot } from './api'
@@ -69,6 +70,7 @@ export function DefaultsEditor({ data, onClose }: DefaultsEditorProps) {
   const totalId = useId()
   const otherId = useId()
   const save = useSaveDefaults()
+  const lock = useMutationLock(save)
   const [rows, setRows] = useState<DraftRow[]>(() => draftFromFormRows(data.form_rows))
   const [other, setOther] = useState(() => amountToText(data.other_amount))
   const [distTotal, setDistTotal] = useState('')
@@ -97,7 +99,7 @@ export function DefaultsEditor({ data, onClose }: DefaultsEditorProps) {
     setRows((prev) => applySnapshot(prev, snapshot))
     setDirty(true)
     setCopyOpen(false)
-    setStatus(t('budget.prefilledFrom', { month: monthLabel(snapshot.ym, lang) }))
+    setStatus(t('budget.prefilledFrom', { month: monthLabelGenitive(snapshot.ym, lang) }))
   }
 
   const close = async () => {
@@ -113,7 +115,10 @@ export function DefaultsEditor({ data, onClose }: DefaultsEditorProps) {
     onClose()
   }
 
-  const submit = () => save.mutate(defaultsPayload(rows, other), { onSuccess: onClose })
+  const submit = () => {
+    if (!lock.take()) return
+    save.mutate(defaultsPayload(rows, other), { onSuccess: onClose })
+  }
 
   return (
     <>

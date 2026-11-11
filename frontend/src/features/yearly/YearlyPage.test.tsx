@@ -3,10 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/test/render'
 import YearlyPage from './YearlyPage'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (body: unknown) =>
-  new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
 
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
@@ -20,7 +19,7 @@ beforeEach(() => {
       delta: i === 5 ? -50 : 0,
       total_balance: i >= 5 ? -50 : 0,
     }))
-    return json({ year, rows, total_income: 1850, total_expenses: 1900, total_delta: -50 })
+    return json(200, { year, rows, total_income: 1850, total_expenses: 1900, total_delta: -50 })
   })
 })
 afterEach(() => vi.unstubAllGlobals())

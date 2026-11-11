@@ -4,10 +4,11 @@
  * The page module must `export default` its component.
  */
 import type { ComponentType } from 'react'
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
+import { createBrowserRouter, Navigate, redirect, type RouteObject } from 'react-router'
 import { PublicOnly, RequireAuth } from '@/auth/guards'
 import { FullScreenSkeleton } from '@/components/skeletons'
 import { AuthenticatedApp, Root } from './layouts'
+import { legacyTarget } from './legacy'
 
 type PageModule = { default: ComponentType }
 
@@ -24,6 +25,13 @@ export const routes: RouteObject[] = [
   {
     element: <Root />,
     hydrateFallbackElement: <FullScreenSkeleton />,
+    // Old-app links (`/?panel=…`, home-screen bookmarks) go to the matching new route.
+    loader: ({ request }) => {
+      const url = new URL(request.url)
+      if (url.pathname !== '/') return null
+      const target = legacyTarget(url.searchParams)
+      return target ? redirect(target) : null
+    },
     children: [
       {
         element: <PublicOnly />,
@@ -46,6 +54,10 @@ export const routes: RouteObject[] = [
               { path: 'transfers', lazy: page(() => import('@/features/transfers/TransfersPage')) },
               { path: 'budget', lazy: page(() => import('@/features/budget/BudgetPage')) },
               { path: 'shared', lazy: page(() => import('@/features/shared/SharedPage')) },
+              {
+                path: 'shared/groups/:groupId',
+                lazy: page(() => import('@/features/shared/SharedGroupPage')),
+              },
               { path: 'yearly', lazy: page(() => import('@/features/yearly/YearlyPage')) },
               { path: 'summary', lazy: page(() => import('@/features/summary/SummaryPage')) },
               {

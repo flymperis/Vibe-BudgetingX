@@ -4,7 +4,6 @@ import { createKeys } from '@/api/keys'
 import type { Schema } from '@/api/types'
 
 export type Summary = Schema<'SummaryOut'>
-export type BalanceAccount = Schema<'BalanceAccount'>
 
 export const summaryKeys = createKeys('summary')
 

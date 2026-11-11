@@ -17,7 +17,7 @@ export default function ReportsInvestmentsPage() {
   const data = query.data
   return (
     <div className={cn('transition-opacity', query.isPlaceholderData && 'opacity-60')}>
-      <YearSwitcher year={year} onChange={setYear} className="-ml-2 mb-1" />
+      <YearSwitcher year={year} onChange={setYear} className="mb-1 -ml-2" />
       {query.isPending ? (
         <div role="status" aria-live="polite" className="space-y-4">
           <span className="sr-only">{t('common.loading')}</span>

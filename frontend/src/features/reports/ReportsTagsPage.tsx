@@ -2,7 +2,7 @@ import { ChevronLeft, Hash } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { StatCard } from '@/components/Cards'
 import { EmptyState } from '@/components/EmptyState'
-import { formatPercent } from '@/components/insights/format'
+import { formatPercent } from '@/lib/format'
 import { ListGroup, ListRow, SectionHeader } from '@/components/ListGroup'
 import { Money } from '@/components/Money'
 import { CardSkeleton, ListSkeleton } from '@/components/skeletons'
@@ -62,7 +62,10 @@ function TagList({ data }: { data: TagsReport }) {
               key={tag.key}
               to={{ search: `?tag=${encodeURIComponent(tag.key)}` }}
               icon={
-                <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <span
+                  aria-hidden
+                  className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"
+                >
                   <Hash className="size-5" />
                 </span>
               }
@@ -130,14 +133,21 @@ function TagView({ tag }: { tag: TagDetail }) {
       {tag.categories.length ? (
         <>
           <SectionHeader title={t('reports.byCategory')} />
-          <ol aria-label={t('reports.byCategory')} className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card">
+          <ol
+            aria-label={t('reports.byCategory')}
+            className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card"
+          >
             {tag.categories.map((c) => (
               <RankRow
                 key={c.name}
                 name={c.name}
                 amount={<Money value={c.total} tone="none" />}
                 barPercent={Math.max(c.share, 0)}
-                meta={<span>{t('reports.shareOfTotal', { share: formatPercent(c.share, lang, { digits: 0 }) })}</span>}
+                meta={
+                  <span>
+                    {t('reports.shareOfTotal', { share: formatPercent(c.share, lang, { digits: 0 }) })}
+                  </span>
+                }
               />
             ))}
           </ol>

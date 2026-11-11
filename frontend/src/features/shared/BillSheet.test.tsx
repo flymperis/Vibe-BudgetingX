@@ -6,10 +6,9 @@ import { renderWithProviders } from '@/test/render'
 import { BillForm } from './BillSheet'
 import { sampleGroup } from './fixtures'
 import { SettleForm } from './SettleSheet'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)

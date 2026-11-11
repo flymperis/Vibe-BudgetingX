@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { formatAge } from '@/components/insights/format'
+import { formatAge } from '@/lib/format'
 import { useLang, useT } from '@/i18n'
 
 /**

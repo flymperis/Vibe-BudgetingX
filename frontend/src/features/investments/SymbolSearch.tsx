@@ -88,8 +88,12 @@ export function SymbolSearch({ kind, onPick, inputId }: SymbolSearchProps) {
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={showList && active >= 0 ? `${id}-opt-${active}` : undefined}
-        aria-label={inputId ? undefined : t(kind === 'crypto' ? 'investments.searchCoin' : 'investments.searchSymbol')}
-        placeholder={t(kind === 'crypto' ? 'investments.searchCoinPlaceholder' : 'investments.searchSymbolPlaceholder')}
+        aria-label={
+          inputId ? undefined : t(kind === 'crypto' ? 'investments.searchCoin' : 'investments.searchSymbol')
+        }
+        placeholder={t(
+          kind === 'crypto' ? 'investments.searchCoinPlaceholder' : 'investments.searchSymbolPlaceholder',
+        )}
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}

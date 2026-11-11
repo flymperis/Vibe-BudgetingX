@@ -1,27 +1,10 @@
 /** Strings of the "manage" screens. Keys must exist in both objects (the compiler checks). */
 export const manageEl = {
   // manage: shared pieces (account balances list)
-  'manage.balances': 'Υπόλοιπα λογαριασμών',
-  'manage.cashTotal': 'Μετρητά & τράπεζες',
-  'manage.cardsTotal': 'Πιστωτικές κάρτες',
-  'manage.netTotal': 'Καθαρό (όλοι οι λογαριασμοί)',
-  'manage.total': 'Σύνολο (όλοι οι λογαριασμοί)',
-  'manage.creditCard': 'Πιστωτική κάρτα',
-  'manage.availableOf': 'Διαθέσιμα {available} από {limit}',
-  'manage.limitUsed': 'Χρήση ορίου: {name}',
-  'manage.payCard': 'Πληρωμή',
-  'manage.statementNone': 'Τίποτα πληρωτέο από την κατάσταση της {date}',
-  'manage.statementPaid': 'Η κατάσταση της {date} εξοφλήθηκε',
-  'manage.statementDue': 'Κατάσταση: {remaining}',
-  'manage.statementLeft': 'Κατάσταση: απομένουν {remaining} από {amount}',
-  'manage.due': 'λήγει {date}',
-  'manage.wasDue': 'έληξε {date}',
 
   // transfers
   'transfers.intro':
     'Μετέφερε χρήματα ανάμεσα στους λογαριασμούς σου. Τα υπόλοιπα αλλάζουν από την ημερομηνία της μεταφοράς.',
-  'transfers.scopeToday': 'Αρχικό υπόλοιπο και κινήσεις έως σήμερα.',
-  'transfers.scopeMonth': 'Υπόλοιπα στις {date} (τέλος του μήνα).',
   'transfers.newTitle': 'Νέα μεταφορά',
   'transfers.payTitle': 'Πληρωμή κάρτας {name}',
   'transfers.from': 'Από',
@@ -108,7 +91,7 @@ export const manageEl = {
   'settings.hintAccounts': 'Τράπεζες, μετρητά, πιστωτικές κάρτες',
   'settings.hintExpenseCategories': 'Προσθήκη, μετονομασία, διαγραφή',
   'settings.hintIncomeCategories': 'Προσθήκη, μετονομασία, διαγραφή',
-  'settings.hintExport': 'Excel, πρότυπο μεταφοράς, εισαγωγή',
+  'settings.hintExport': 'Excel, πρότυπο εισαγωγής, εισαγωγή',
   'settings.hintIntegrations': 'Τοπικό AI (Ollama) και bot του Telegram',
   'settings.signedInAs': 'Συνδεδεμένος ως',
   'settings.tapToEdit': 'Πάτησε έναν λογαριασμό για επεξεργασία ή διαγραφή.',
@@ -120,8 +103,6 @@ export const manageEl = {
     'Οι λογαριασμοί είναι κοινοί για έξοδα και έσοδα. Βάλε την τράπεζα στο όνομα (π.χ. «Eurobank», «Πειραιώς», «Revolut») και δίπλα εμφανίζεται το σήμα της. Το υπόλοιπο είναι το αρχικό υπόλοιπο συν όλες τις κινήσεις έως την ημερομηνία του μήνα που έχεις επιλέξει.',
   'settings.cardsHelp':
     'Σε πιστωτική κάρτα, το αρχικό υπόλοιπο είναι όσα χρωστάς. Τα έξοδα με την κάρτα αυξάνουν την οφειλή· την εξοφλείς με μεταφορά από τραπεζικό λογαριασμό. Όρισε ημέρα κατάστασης και λήξης για να βλέπεις τι έμεινε να πληρώσεις.',
-  'settings.balancesToday': 'Υπόλοιπα σήμερα',
-  'settings.balancesAsOf': 'Υπόλοιπα στις {date}',
   'settings.noAccounts': 'Κανένας λογαριασμός ακόμα',
   'settings.noAccountsHint': 'Πρόσθεσε την τράπεζα, τα μετρητά ή την κάρτα σου για να ξεκινήσεις.',
   'settings.addAccount': 'Νέος λογαριασμός',
@@ -179,7 +160,7 @@ export const manageEl = {
   'settings.exportHelp':
     'Ένα αρχείο Excel με λογαριασμούς, κατηγορίες εξόδων/εσόδων και κάθε έξοδο και έσοδο. Για αντίγραφο ασφαλείας ή πριν από επεξεργασία εκτός εφαρμογής.',
   'settings.exportDownload': 'Λήψη πλήρους εξαγωγής (.xlsx)',
-  'settings.migrationTitle': 'Μεταφορά δεδομένων',
+  'settings.migrationTitle': 'Μετάβαση από άλλη εφαρμογή',
   'settings.migrationHelp1':
     'Κατέβασε ένα κενό αρχείο με τη μορφή της εισαγωγής (ίδια φύλλα και στήλες), συμπλήρωσε γραμμές ή επικόλλησε δεδομένα και κάνε εισαγωγή παρακάτω.',
   'settings.migrationHelp2': 'Η αντιστοίχιση γίνεται με τα ονόματα κατηγοριών και λογαριασμών, όχι με IDs.',
@@ -187,7 +168,7 @@ export const manageEl = {
     'Στα έξοδα: αρνητικά ποσά για αγορές, θετικά για επιστροφές χρημάτων (αυξάνουν το υπόλοιπο). Τα έσοδα μένουν θετικά.',
   'settings.migrationHelp4':
     'Κατηγορίες και λογαριασμοί των κινήσεων που λείπουν δημιουργούνται αυτόματα (μετά τα φύλλα κατηγοριών και λογαριασμών).',
-  'settings.templateDownload': 'Λήψη προτύπου μεταφοράς (.xlsx)',
+  'settings.templateDownload': 'Λήψη προτύπου εισαγωγής (.xlsx)',
   'settings.importTitle': 'Εισαγωγή από Excel',
   'settings.importChoose': 'Διάλεξε αρχείο',
   'settings.importFileHint': 'Μόνο .xlsx',
@@ -259,7 +240,7 @@ export const manageEl = {
   'settings.tgNotifications': 'Ειδοποιήσεις',
   'settings.tgKindBudget': 'Ειδοποιήσεις budget (80% και 100% μιας κατηγορίας)',
   'settings.tgKindCards': 'Υπενθυμίσεις πληρωμής πιστωτικών',
-  'settings.tgKindBills': 'Επαναλαμβανόμενοι λογαριασμοί που λήγουν αύριο',
+  'settings.tgKindBills': 'Επαναλαμβανόμενα έξοδα που γράφονται αύριο',
   'settings.tgKindWeekly': 'Εβδομαδιαία σύνοψη (Κυριακή βράδυ)',
   'settings.tgKindMonthly': 'Μηνιαία σύνοψη (1η του μήνα)',
   'settings.tgCardDays': 'Υπενθύμιση πληρωμής κάρτας τόσες ημέρες πριν',
@@ -275,25 +256,7 @@ export const manageEl = {
 } as const
 
 export const manageEn: Record<keyof typeof manageEl, string> = {
-  'manage.balances': 'Account balances',
-  'manage.cashTotal': 'Cash & bank',
-  'manage.cardsTotal': 'Credit cards',
-  'manage.netTotal': 'Net (all accounts)',
-  'manage.total': 'Total (all accounts)',
-  'manage.creditCard': 'Credit card',
-  'manage.availableOf': '{available} available of {limit}',
-  'manage.limitUsed': 'Credit limit used: {name}',
-  'manage.payCard': 'Pay card',
-  'manage.statementNone': 'Nothing due from the {date} statement',
-  'manage.statementPaid': '{date} statement paid',
-  'manage.statementDue': 'Statement {remaining}',
-  'manage.statementLeft': 'Statement {remaining} left of {amount}',
-  'manage.due': 'due {date}',
-  'manage.wasDue': 'was due {date}',
-
   'transfers.intro': 'Move money between your accounts. Balances update from the transfer date.',
-  'transfers.scopeToday': 'Opening balance plus movements through today.',
-  'transfers.scopeMonth': 'Balances as of {date} (end of the month).',
   'transfers.newTitle': 'New transfer',
   'transfers.payTitle': 'Pay {name}',
   'transfers.from': 'From',
@@ -389,8 +352,6 @@ export const manageEn: Record<keyof typeof manageEl, string> = {
     'Accounts are shared between expenses and income. Include the bank in the name (e.g. "Eurobank", "Πειραιώς", "Revolut") and its logo is shown next to the account. The balance is the opening balance plus all movements up to the selected month’s cutoff.',
   'settings.cardsHelp':
     'For a credit card, the opening balance is what you owe on it. Expenses on the card add to what you owe; pay it off with a transfer from a bank account. Set the statement and due days to see what the last statement left to pay.',
-  'settings.balancesToday': 'Balances today',
-  'settings.balancesAsOf': 'Balances as of {date}',
   'settings.noAccounts': 'No accounts yet',
   'settings.noAccountsHint': 'Add your bank, cash or card to get started.',
   'settings.addAccount': 'Add account',

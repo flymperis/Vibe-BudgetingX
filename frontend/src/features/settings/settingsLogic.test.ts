@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Account } from '@/components/manage/accounts-api'
+import type { Account } from '@/api/accounts'
 import { translate, type MessageKey, type TParams } from '@/i18n'
 import {
   accountFormFromAccount,

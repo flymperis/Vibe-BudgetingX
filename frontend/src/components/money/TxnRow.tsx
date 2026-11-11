@@ -1,3 +1,6 @@
+import { use } from 'react'
+import { BootstrapContext } from '@/bootstrap/bootstrap'
+import { AccountAvatar } from '@/components/AccountAvatar'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { Money } from '@/components/Money'
 import { TagText } from '@/components/TagText'
@@ -27,9 +30,9 @@ export function TxnRow({
   const lang = useLang()
   const day = relativeDayLabel(entry.date, lang, today)
   const title = entry.notes || entry.category_name
-  const subtitle = [entry.notes ? entry.category_name : null, entry.account_name, showDay ? day : null]
-    .filter(Boolean)
-    .join(' · ')
+  const bank = use(BootstrapContext)?.accounts.find((a) => a.id === entry.account_id)?.bank
+  const before = entry.notes ? `${entry.category_name} · ` : ''
+  const after = showDay ? ` · ${day}` : ''
   return (
     <li className="relative">
       <button
@@ -51,7 +54,18 @@ export function TxnRow({
               entry.category_name
             )}
           </span>
-          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subtitle}</span>
+          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+            {before}
+            <AccountAvatar
+              name={entry.account_name}
+              bank={bank}
+              size="xs"
+              fallback={false}
+              className="mr-1 inline-grid size-4 rounded-[5px] align-[-3px] text-[7px]"
+            />
+            {entry.account_name}
+            {after}
+          </span>
         </span>
         <Money value={entry.amount} tone="positive" className="text-[15px] font-semibold" />
       </div>

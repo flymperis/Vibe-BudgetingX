@@ -1,12 +1,8 @@
 /**
- * Planning screens (Budget, Summary, Yearly) against the REAL dev backend,
- * through the planning dev server (`npm run dev -- --port 5183 --strictPort`;
- * override with PLANNING_BASE_URL). Each test registers a fresh user.
+ * Planning screens (Budget, Summary, Yearly) against the REAL backend (base URL
+ * from playwright.config.ts). Each test registers a fresh user.
  */
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
-
-const BASE = process.env.PLANNING_BASE_URL ?? 'http://127.0.0.1:5183'
-test.use({ baseURL: BASE })
 
 const PASSWORD = 'planning-e2e-pass-1'
 

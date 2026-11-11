@@ -16,6 +16,8 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': { target: API_TARGET, changeOrigin: false },
+      // Bank logos (/static/banks/*.png) are served by the backend.
+      '/static/': { target: API_TARGET, changeOrigin: false },
     },
   },
   build: {

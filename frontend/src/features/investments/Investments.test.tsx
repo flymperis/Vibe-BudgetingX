@@ -9,32 +9,21 @@ import type { Investments } from './api'
 import CryptoPage from './CryptoPage'
 import InvestmentsLayout from './InvestmentsLayout'
 import StocksPage from './StocksPage'
+import { json, mockDesktop } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-const originalMatchMedia = window.matchMedia
+let restoreMatchMedia = () => {}
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
   fetchMock.mockReset()
   setCsrfToken('tok')
   // Desktop: the form opens as a dialog.
-  window.matchMedia = (query: string) =>
-    ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    }) as MediaQueryList
+  restoreMatchMedia = mockDesktop()
 })
 afterEach(() => {
   vi.unstubAllGlobals()
-  window.matchMedia = originalMatchMedia
+  restoreMatchMedia()
 })
 
 function payload(loaded = true): Investments {
@@ -215,6 +204,11 @@ describe('Investments screen', () => {
       fee: 0,
     })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    // The list is refreshed from the database at once (cache-only prices), then the
+    // live lookup runs in the background: the new row never waits for the network.
+    await waitFor(() =>
+      expect(priceCalls(calls).map((c) => c.search)).toEqual(['?live=true', '?live=false', '?live=true']),
+    )
   })
 
   it('shows the server message inline when the transaction is rejected', async () => {

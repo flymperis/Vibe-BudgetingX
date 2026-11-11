@@ -6,7 +6,7 @@ import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { Member } from './api'
 import { personName } from './labels'
-import { Avatar } from './SharedParts'
+import { Avatar } from '@/components/Avatar'
 import { centsToInput, evenValues, type SplitMethod, type SplitResult, type SplitStatus } from './split'
 
 const SUFFIX: Record<SplitMethod, string> = { equal: '', exact: '€', percent: '%', shares: '×' }

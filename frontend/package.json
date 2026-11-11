@@ -11,7 +11,9 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
+    "test": "vitest run && node scripts/pwa-check.mjs",
+    "test:unit": "vitest run",
+    "test:pwa": "node scripts/pwa-check.mjs",
     "test:watch": "vitest",
     "e2e": "playwright test",
     "gen:api": "openapi-typescript http://127.0.0.1:5001/openapi.json -o src/api/schema.d.ts"

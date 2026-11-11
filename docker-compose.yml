@@ -1,0 +1,38 @@
+# Vibe Budgeting X
+#
+#   mkdir -p budget-data
+#   docker compose up --build -d
+#   open http://localhost:5001
+#
+# Data lives in ./budget-data on the host (database.db, secret_key, backups/).
+services:
+  vibe-budgeting-x:
+    build: .
+    image: vibe-budgeting-x:latest
+    container_name: vibe-budgeting-x
+    restart: unless-stopped
+    ports:
+      - "${VBX_PORT:-5001}:5001"
+    volumes:
+      - ./budget-data:/app/data
+    environment:
+      DATABASE_PATH: /app/data/database.db
+      # Time zone: decides what "today" is for new entries, when recurring
+      # entries are posted, and when Telegram reminders / backups run.
+      TZ: ${TZ:-UTC}
+      # Background jobs: the Telegram bot poller and the nightly database backup.
+      # KEEP THIS false WHILE THE OLD APP IS STILL RUNNING: the old app already
+      # polls the same Telegram bot (two pollers steal each other's messages and
+      # would record entries twice) and already backs up the database. Switch it
+      # to true only when the old app has been stopped for good.
+      VBX_ENABLE_JOBS: "false"
+      # Optional, same meaning as in the old app (uncomment to set):
+      # FLASK_SECRET_KEY: "a long random string"   # else a key is generated once and kept in budget-data/secret_key
+      # VB_SECURE_COOKIES: "true"                   # only when served over HTTPS
+      # ALLOW_REGISTRATION: "false"                 # default true
+      # FINNHUB_API_KEY: "..."                      # live stock prices / symbol search in Investments -> Stocks
+      # TELEGRAM_BOT_TOKEN: "..."                   # fallback when Settings -> Integrations has no token
+      # VB_BACKUP_DIR: /app/data/backups            # default: backups/ next to the database
+      # VB_BACKUP_KEEP_DAYS: "14"                   # 0 turns nightly backups off
+      # VB_BACKUP_KEEP_MONTHS: "12"
+      # VB_BACKUP_TIME: "03:30"

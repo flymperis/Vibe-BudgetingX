@@ -11,10 +11,10 @@ import {
   type TooltipContentProps,
 } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
-import { formatAxisMoney, monthNominative } from '@/components/insights/format'
+import { formatAxisMoney } from '@/lib/format'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { useLang, useT } from '@/i18n'
-import { monthShortName } from '@/lib/dates'
+import { monthNameOf, monthShortName } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import type { CashFlowChartData } from '../api'
 import { ChartTooltipBox, TooltipLine } from './ChartTooltipBox'
@@ -39,7 +39,7 @@ export default function CashFlowChart({ chart, year }: { chart: CashFlowChartDat
   const lang = useLang()
   const isDesktop = useIsDesktop()
   const rows: Row[] = chart.months.map((m) => ({
-    month: monthNominative(year, m.month, lang),
+    month: monthNameOf(m.month, lang),
     short: monthShortName(monthKey(year, m.month), lang),
     income: m.income !== 0 ? m.income : null,
     expenses: m.expenses !== 0 ? m.expenses : null,
@@ -48,9 +48,7 @@ export default function CashFlowChart({ chart, year }: { chart: CashFlowChartDat
   }))
   const domain: [number, number] = [chart.y_min ?? 0, chart.y_max ?? 0]
   // Ticks at the API's bounds and at zero.
-  const ticks = Array.from(new Set([domain[0], 0, domain[1]])).filter(
-    (v) => v >= domain[0] && v <= domain[1],
-  )
+  const ticks = Array.from(new Set([domain[0], 0, domain[1]])).filter((v) => v >= domain[0] && v <= domain[1])
 
   const renderTooltip = ({ active, payload }: TooltipContentProps<ValueType, NameType>) => {
     const row = active ? (payload?.[0]?.payload as Row | undefined) : undefined
@@ -75,7 +73,11 @@ export default function CashFlowChart({ chart, year }: { chart: CashFlowChartDat
   return (
     <figure>
       <figcaption className="sr-only">{t('reports.cashFlowCaption', { year })}</figcaption>
-      <div className="h-60 w-full [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none md:h-72" role="img" aria-label={t('reports.cashFlowCaption', { year })}>
+      <div
+        className="h-60 w-full md:h-72 [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none"
+        role="img"
+        aria-label={t('reports.cashFlowCaption', { year })}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={rows} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barGap={2}>
             <CartesianGrid vertical={false} stroke={CHART.grid} strokeDasharray="3 3" />

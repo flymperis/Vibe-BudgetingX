@@ -7,10 +7,9 @@ import type { Overview, Spending, TagsReport } from './api'
 import ReportsOverviewPage from './ReportsOverviewPage'
 import ReportsSpendingPage from './ReportsSpendingPage'
 import ReportsTagsPage from './ReportsTagsPage'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
@@ -39,7 +38,9 @@ const month = (m: number, income: number, expenses: number) => ({
 })
 
 function overview(): Overview {
-  const months = Array.from({ length: 12 }, (_, i) => (i < 2 ? month(i + 1, 1000, -400 - i * 100) : month(i + 1, 0, 0)))
+  const months = Array.from({ length: 12 }, (_, i) =>
+    i < 2 ? month(i + 1, 1000, -400 - i * 100) : month(i + 1, 0, 0),
+  )
   return {
     year: 2026,
     current_year: 2026,
@@ -66,7 +67,13 @@ function overview(): Overview {
     },
     bank_baseline: 500,
     bank_chart: {
-      points: months.map((m) => ({ month_num: m.month, month_label: 'x', short: 'x', value: 600, change: 100 })),
+      points: months.map((m) => ({
+        month_num: m.month,
+        month_label: 'x',
+        short: 'x',
+        value: 600,
+        change: 100,
+      })),
       y_min: 400,
       y_max: 800,
       y_mid: 600,
@@ -164,7 +171,16 @@ describe('Reports spending', () => {
 describe('Reports tags', () => {
   const tags: TagsReport = {
     tags: [
-      { tag: 'κρήτη2026', key: 'κρητη2026', spent: 425.5, income: 20, net: -405.5, count: 3, first: '2026-07-01', last: '2026-07-10' },
+      {
+        tag: 'κρήτη2026',
+        key: 'κρητη2026',
+        spent: 425.5,
+        income: 20,
+        net: -405.5,
+        count: 3,
+        first: '2026-07-01',
+        last: '2026-07-10',
+      },
     ],
     selected_tag: null,
     tag: null,
@@ -190,7 +206,16 @@ describe('Reports tags', () => {
             { name: 'Refunds', total: -10, share: -2 },
           ],
           rows: [
-            { kind: 'expense', id: 1, day: '2026-07-10', amount: -400, notes: 'Ξενοδοχείο #κρήτη2026', category: 'Hotel', account: null, tags: ['κρήτη2026'] },
+            {
+              kind: 'expense',
+              id: 1,
+              day: '2026-07-10',
+              amount: -400,
+              notes: 'Ξενοδοχείο #κρήτη2026',
+              category: 'Hotel',
+              account: null,
+              tags: ['κρήτη2026'],
+            },
           ],
         },
       },

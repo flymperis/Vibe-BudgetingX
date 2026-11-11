@@ -52,3 +52,20 @@ export function useMonthSearch(): string {
   const raw = params.get(MONTH_PARAM)
   return isValidMonth(raw) ? `?${MONTH_PARAM}=${raw}` : ''
 }
+
+/**
+ * Search string keeping only the listed params, in that order ("?month=2026-10&year=2025").
+ * Sub-tabs use it so a report's `year` / `account` survive switching tabs.
+ */
+export function useKeptSearch(keep: readonly string[]): string {
+  const [params] = useSearchParams()
+  const kept = new URLSearchParams()
+  for (const name of keep) {
+    const value = params.get(name)
+    if (value === null || value === '') continue
+    if (name === MONTH_PARAM && !isValidMonth(value)) continue
+    kept.set(name, value)
+  }
+  const text = kept.toString()
+  return text ? `?${text}` : ''
+}

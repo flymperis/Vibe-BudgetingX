@@ -30,7 +30,8 @@ import { effectText, memberNames, methodLabel, paymentNames, personName } from '
 import { useGroupNav } from './nav'
 import { PaymentDetailSheet } from './PaymentDetailSheet'
 import { SettleSheet } from './SettleSheet'
-import { Avatar, Hint, Tag } from './SharedParts'
+import { Avatar } from '@/components/Avatar'
+import { Hint, Tag } from './SharedParts'
 
 export function GroupDetailScreen({ groupId }: { groupId: number }) {
   const t = useT()

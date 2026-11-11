@@ -1,27 +1,29 @@
 /**
  * Shared expenses against the REAL backend (dev server proxying /api to :5001).
- * Run with your own Vite server:  VBX_E2E_BASE=http://127.0.0.1:5184 npx playwright test e2e/shared.spec.ts
  * Two browser contexts = two registered users; one invites the other.
  */
 import { expect, test, type APIRequestContext, type Browser, type Page } from '@playwright/test'
 
-const BASE = process.env.VBX_E2E_BASE ?? 'http://127.0.0.1:5184'
-test.use({ baseURL: BASE })
 test.describe.configure({ mode: 'serial', timeout: 120_000 })
 
 const PASSWORD = 'e2e-secret-pass-123'
 
 async function register(request: APIRequestContext, username: string) {
-  const session = await (await request.get(`${BASE}/api/auth/session`)).json()
-  const res = await request.post(`${BASE}/api/auth/register`, {
+  const session = await (await request.get('/api/auth/session')).json()
+  const res = await request.post('/api/auth/register', {
     data: { username, password: PASSWORD, password2: PASSWORD },
     headers: { 'X-CSRF-Token': session.csrf_token },
   })
   expect(res.ok()).toBeTruthy()
 }
 
-async function newUser(browser: Browser, username: string, viewport: { width: number; height: number }) {
-  const context = await browser.newContext({ baseURL: BASE, viewport, locale: 'el-GR' })
+async function newUser(
+  browser: Browser,
+  baseURL: string,
+  username: string,
+  viewport: { width: number; height: number },
+) {
+  const context = await browser.newContext({ baseURL, viewport, locale: 'el-GR' })
   const page = await context.newPage()
   await register(page.request, username)
   return { context, page }
@@ -36,18 +38,19 @@ async function confirmDestructive(page: Page, label: string) {
 
 test('two users: group, bills with every split, joining, recording, payments, cleanup', async ({
   browser,
+  baseURL,
 }, info) => {
   const viewport = info.project.use.viewport ?? { width: 390, height: 844 }
   const tag = `${info.project.name.slice(0, 1)}${Date.now().toString(36)}`
   const userA = `agent_shared_a_${tag}`
   const userB = `agent_shared_b_${tag}`
-  const a = await newUser(browser, userA, viewport)
-  const b = await newUser(browser, userB, viewport)
+  const a = await newUser(browser, baseURL!, userA, viewport)
+  const b = await newUser(browser, baseURL!, userB, viewport)
   const groupName = `Ταξίδι ${tag}`
 
   // --- A: people ------------------------------------------------------------
   await a.page.goto('/shared')
-  await expect(a.page.getByRole('heading', { level: 1, name: 'Μοιρασμένα' })).toBeVisible()
+  await expect(a.page.getByRole('heading', { level: 1, name: 'Κοινά έξοδα' })).toBeVisible()
   await expect(a.page.getByText('Καμία ομάδα ακόμα')).toBeVisible()
   await a.page.getByLabel('Προσθήκη ατόμων').fill('Κώστας, Ελένη')
   await a.page.getByRole('button', { name: 'Προσθήκη', exact: true }).click()
@@ -70,12 +73,12 @@ test('two users: group, bills with every split, joining, recording, payments, cl
   await ng.getByRole('checkbox', { name: 'Κώστας' }).click()
   await ng.getByLabel('Πρόσκληση χρηστών του Vibe Budgeting').fill(userB)
   await ng.getByRole('button', { name: 'Δημιουργία ομάδας' }).click()
-  await expect(a.page).toHaveURL(/\?group=\d+/)
+  await expect(a.page).toHaveURL(/\/shared\/groups\/\d+$/)
   await expect(a.page.getByRole('heading', { level: 1, name: groupName })).toBeVisible()
   await expect(a.page.getByText('σε αναμονή')).toBeVisible()
 
   // --- A: equal bill ----------------------------------------------------------
-  await a.page.locator('#main').getByRole('button', { name: 'Νέο έξοδο' }).click()
+  await a.page.locator('#main').getByRole('button', { name: 'Νέο κοινό έξοδο' }).click()
   let form = sheet(a.page)
   await form.getByLabel('Ποσό').fill('90')
   await form.getByLabel('Περιγραφή').fill('Φαγητό #e2e')
@@ -112,7 +115,7 @@ test('two users: group, bills with every split, joining, recording, payments, cl
   await expect(b.page.getByRole('heading', { level: 1, name: groupName })).toBeVisible()
 
   // B adds a bill paid by B, split by shares between A and B
-  await b.page.locator('#main').getByRole('button', { name: 'Νέο έξοδο' }).click()
+  await b.page.locator('#main').getByRole('button', { name: 'Νέο κοινό έξοδο' }).click()
   form = sheet(b.page)
   await form.getByLabel('Ποσό').fill('30')
   await form.getByLabel('Περιγραφή').fill('Βενζίνη')
@@ -185,7 +188,7 @@ test('two users: group, bills with every split, joining, recording, payments, cl
 
   await settings.getByRole('button', { name: 'Διαγραφή ομάδας' }).click()
   await confirmDestructive(a.page, 'Διαγραφή')
-  await expect(a.page).not.toHaveURL(/group=/)
+  await expect(a.page).toHaveURL(/\/shared$/)
   await expect(a.page.getByText('Καμία ομάδα ακόμα')).toBeVisible()
 
   await a.context.close()

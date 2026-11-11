@@ -17,7 +17,9 @@ import {
 } from './api'
 import { personName } from './labels'
 import { useGroupNav } from './nav'
-import { Avatar, Tag, ToggleChips } from './SharedParts'
+import { Avatar } from '@/components/Avatar'
+import { ToggleChips } from '@/components/ToggleChips'
+import { Tag } from './SharedParts'
 
 export function GroupSettingsSheet({
   open,
@@ -56,10 +58,12 @@ function GroupSettings({ group, onClose }: { group: GroupDetail; onClose: () => 
 
   const onRename = (e: FormEvent) => {
     e.preventDefault()
+    if (rename.isPending) return
     rename.mutate({ id: group.id, name: name.trim() })
   }
   const onAdd = (e: FormEvent) => {
     e.preventDefault()
+    if (add.isPending) return
     add.mutate(
       { groupId: group.id, body: { member_ids: picked, usernames, new_members: newMembers } },
       {
@@ -94,7 +98,7 @@ function GroupSettings({ group, onClose }: { group: GroupDetail; onClose: () => 
   }
 
   return (
-    <div className="min-w-0 pb-2">
+    <div className="pb-2">
       <form onSubmit={onRename}>
         <FieldLabel htmlFor={`${id}-name`} className="mt-1">
           {t('shared.groupName')}

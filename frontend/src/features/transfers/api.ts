@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
-import { createKeys } from '@/api/keys'
+import { createKeys, invalidateMoney } from '@/api/keys'
 import type { Schema } from '@/api/types'
-import { invalidateBalances } from '@/components/manage/accounts-api'
 import { translate } from '@/i18n'
 
 export type TransferList = Schema<'TransferListOut'>
@@ -28,7 +27,7 @@ export function useCreateTransfer() {
     mutationFn: (body: TransferIn) => api.post<Schema<'TransferSavedOut'>>('/transfers', body),
     meta: { toastErrors: false },
     onSuccess: () => {
-      void invalidateBalances(qc)
+      void invalidateMoney(qc)
       toast.success(translate('transfers.recorded'))
     },
   })
@@ -39,7 +38,7 @@ export function useDeleteTransfer() {
   return useMutation({
     mutationFn: (id: number) => api.delete<Schema<'OkOut'>>(`/transfers/${id}`),
     onSuccess: () => {
-      void invalidateBalances(qc)
+      void invalidateMoney(qc)
       toast.success(translate('common.deleted'))
     },
   })

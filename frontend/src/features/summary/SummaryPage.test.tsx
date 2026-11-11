@@ -3,10 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/test/render'
 import type { Summary } from './api'
 import SummaryPage from './SummaryPage'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (body: unknown) =>
-  new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
 
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
@@ -62,7 +61,7 @@ const base: Summary = {
 
 function serve(data: Summary) {
   fetchMock.mockImplementation(async (input) =>
-    new URL(String(input), 'http://x').pathname === '/api/summary' ? json(data) : json({}),
+    new URL(String(input), 'http://x').pathname === '/api/summary' ? json(200, data) : json(200, {}),
   )
 }
 
@@ -129,6 +128,6 @@ describe('SummaryPage', () => {
     renderWithProviders(<SummaryPage />, { path: '/summary?month=2026-10' })
     expect(await screen.findByText('Κανένα έσοδο αυτόν τον μήνα.')).toBeInTheDocument()
     expect(screen.getByText('Κανένα έξοδο αυτόν τον μήνα.')).toBeInTheDocument()
-    expect(screen.getByText('Δεν υπάρχουν λογαριασμοί ακόμα.')).toBeInTheDocument()
+    expect(screen.getByText('Δεν έχεις λογαριασμούς ακόμα.')).toBeInTheDocument()
   })
 })

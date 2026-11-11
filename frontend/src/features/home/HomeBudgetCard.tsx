@@ -13,6 +13,15 @@ const STATUS_TEXT: Record<BudgetStatus, string> = {
   over: 'text-negative',
 }
 
+/**
+ * The server lists over-budget lines by name; the "Everything else" line is
+ * named by vbx.core.budget in English (`name: "Everything else"`), so show
+ * the translated label for it (Budget and Summary use `category_id: null`).
+ */
+const CORE_OTHER_NAME = 'Everything else'
+const overName = (name: string, t: ReturnType<typeof useT>) =>
+  name === CORE_OTHER_NAME ? t('budget.everythingElse') : name
+
 /** The old Home budget card: spent of budget, left / over, bar, over-budget names. */
 export function HomeBudgetCard({ card, month }: { card: Schema<'HomeBudgetCard'>; month: string }) {
   const t = useT()
@@ -42,7 +51,7 @@ export function HomeBudgetCard({ card, month }: { card: Schema<'HomeBudgetCard'>
       </p>
       {card.over.length ? (
         <p className="mt-1 text-xs text-negative">
-          {t('home.budgetOverNames', { names: card.over.join(', ') })}
+          {t('home.budgetOverNames', { names: card.over.map((n) => overName(n, t)).join(', ') })}
         </p>
       ) : null}
     </Link>

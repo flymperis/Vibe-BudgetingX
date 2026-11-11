@@ -1,7 +1,16 @@
-import { ArrowDownLeft, ArrowUpRight, Info, Plus, RefreshCw, TrendingUp, TriangleAlert, Wallet } from 'lucide-react'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Info,
+  Plus,
+  RefreshCw,
+  TrendingUp,
+  TriangleAlert,
+  Wallet,
+} from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { IconTile } from '@/components/CategoryIcon'
-import { formatPercent, formatQuantity } from '@/components/insights/format'
+import { formatPercent, formatQuantity } from '@/lib/format'
 import { EmptyState } from '@/components/EmptyState'
 import { DetailRow } from '@/components/FormField'
 import { ListGroup, SectionHeader } from '@/components/ListGroup'
@@ -148,7 +157,9 @@ function Hint({
     <p
       className={cn(
         'mb-3 flex gap-2 rounded-xl border px-3 py-2.5 text-[13px] leading-snug',
-        tone === 'warning' ? 'border-warning/40 bg-warning/10 text-foreground' : 'bg-muted/50 text-muted-foreground',
+        tone === 'warning'
+          ? 'border-warning/40 bg-warning/10 text-foreground'
+          : 'bg-muted/50 text-muted-foreground',
         className,
       )}
     >
@@ -164,10 +175,7 @@ function SummaryCard({ view }: { view: PortfolioView }) {
   const cur = view.currency
   const loaded = view.pricesLoaded
   return (
-    <section
-      aria-label={t('investments.summary')}
-      className="rounded-3xl bg-hero p-5 text-hero-foreground"
-    >
+    <section aria-label={t('investments.summary')} className="rounded-3xl bg-hero p-5 text-hero-foreground">
       <p className="text-[13px] opacity-80">{t('investments.portfolioValue')}</p>
       <p className="mt-1 mb-4 text-[34px] leading-tight font-bold tracking-tight">
         <Money value={loaded ? view.totalValue : null} currency={cur} tone="none" />
@@ -201,15 +209,22 @@ function RefreshRow({ view, loadedAt, onAdd }: { view: PortfolioView; loadedAt: 
   const busy = refresh.isPending && refresh.variables === view.kind
   return (
     <div className="mt-3 flex items-center gap-3">
-      <Button variant="outline" size="touch" onClick={() => refresh.mutate(view.kind)} disabled={refresh.isPending}>
-        <RefreshCw aria-hidden className={cn(busy && 'animate-spin')} />
-        {t('investments.refreshPrices')}
-      </Button>
-      <span className="min-w-0 flex-1 leading-tight">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-1 md:flex-row md:items-center md:gap-3">
+        <Button
+          variant="outline"
+          size="touch"
+          onClick={() => refresh.mutate(view.kind)}
+          disabled={refresh.isPending}
+        >
+          <RefreshCw aria-hidden className={cn(busy && 'animate-spin')} />
+          {t('investments.refreshPrices')}
+        </Button>
         {view.pricesLoaded && view.pricesAgeSeconds !== null ? (
-          <PriceAge ageSeconds={view.pricesAgeSeconds} loadedAt={loadedAt} />
+          <span className="ml-1 leading-tight md:ml-0">
+            <PriceAge ageSeconds={view.pricesAgeSeconds} loadedAt={loadedAt} />
+          </span>
         ) : null}
-      </span>
+      </div>
       <Button size="icon-touch" className="md:hidden" onClick={onAdd} aria-label={t('investments.addTx')}>
         <Plus aria-hidden />
       </Button>
@@ -246,7 +261,8 @@ function Pnl({ h, currency, className }: { h: HoldingView; currency: Currency; c
 
 function NaOr({ value, currency }: { value: number | null | undefined; currency: Currency }) {
   const t = useT()
-  if (value === null || value === undefined) return <span className="text-muted-foreground">{t('investments.na')}</span>
+  if (value === null || value === undefined)
+    return <span className="text-muted-foreground">{t('investments.na')}</span>
   return <Money value={value} currency={currency} tone="none" />
 }
 
@@ -283,7 +299,7 @@ function HoldingsList({ view, onOpen }: { view: PortfolioView; onOpen: (h: Holdi
                 onClick={() => onOpen(h)}
                 aria-label={t('investments.holdingDetails', { name: `${h.title} ${h.name}` })}
                 className={cn(
-                  'flex min-h-14 w-full items-center gap-3 px-3.5 py-2.5 text-left outline-none transition-colors',
+                  'flex min-h-14 w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors outline-none',
                   'cursor-pointer hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-muted',
                   GRID,
                 )}
@@ -361,7 +377,7 @@ function TxRow({ tx, view, onOpen }: { tx: TxView; view: PortfolioView; onOpen: 
         type="button"
         onClick={onOpen}
         aria-label={`${t('common.edit')}: ${typeLabel} ${tx.title}, ${shortDateLabel(tx.date, lang)}`}
-        className="flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-muted"
+        className="flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors outline-none hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-muted"
       >
         <IconTile icon={isBuy ? ArrowDownLeft : ArrowUpRight} tone={isBuy ? 'green' : 'rose'} />
         <span className="min-w-0 flex-1">
@@ -456,4 +472,3 @@ function HoldingSheet({
     </ResponsiveSheet>
   )
 }
-

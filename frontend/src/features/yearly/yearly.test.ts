@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chartPoints, nominativeMonth, parseYear } from './api'
+import { chartPoints, parseYear } from './api'
 
 describe('parseYear', () => {
   it('accepts 2000..2100 and falls back otherwise', () => {
@@ -8,13 +8,6 @@ describe('parseYear', () => {
     expect(parseYear('2101', 2026)).toBe(2026)
     expect(parseYear('abc', 2026)).toBe(2026)
     expect(parseYear(null, 2026)).toBe(2026)
-  })
-})
-
-describe('nominativeMonth', () => {
-  it('gives the nominative month name', () => {
-    expect(nominativeMonth(2026, 3, 'el-GR')).toBe('Μάρτιος')
-    expect(nominativeMonth(2026, 11, 'en-GB')).toBe('November')
   })
 })
 

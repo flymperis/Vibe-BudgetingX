@@ -112,7 +112,7 @@ function BillDetail({
   }
 
   return (
-    <div className="min-w-0 pb-2">
+    <div className="pb-2">
       <div className="mb-3 text-center">
         <TagText text={bill.description} className="block text-[17px] font-semibold break-words" />
         <Money value={bill.amount} tone="none" className="mt-1 block text-[32px] font-bold tracking-tight" />

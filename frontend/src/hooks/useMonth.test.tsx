@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useLocation } from 'react-router'
 import { addMonths, currentMonth } from '@/lib/dates'
 import { renderWithProviders } from '@/test/render'
-import { monthFromSearch, useMonth } from './useMonth'
+import { monthFromSearch, useKeptSearch, useMonth } from './useMonth'
 
 function Probe() {
   const { month, prev, next } = useMonth()
@@ -37,5 +37,13 @@ describe('useMonth', () => {
     await user.click(screen.getByText('next'))
     expect(screen.getByTestId('month')).toHaveTextContent(currentMonth())
     expect(screen.getByTestId('search')).not.toHaveTextContent('month=')
+  })
+
+  it('keeps only the listed params (report tabs keep year and account)', () => {
+    function Kept() {
+      return <span data-testid="kept">{useKeptSearch(['month', 'year', 'account'])}</span>
+    }
+    renderWithProviders(<Kept />, { path: '/reports/overview?tag=x&account=3&year=2024&month=bad' })
+    expect(screen.getByTestId('kept')).toHaveTextContent('?year=2024&account=3')
   })
 })

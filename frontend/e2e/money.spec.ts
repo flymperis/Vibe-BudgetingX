@@ -1,12 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
 
 /**
- * Home / Expenses / Income / quick add against the REAL backend, through a dev
- * server that proxies /api to it (default: the money group's Vite on :5181;
- * override with VBX_E2E_BASE). Each test registers a fresh user, who starts
+ * Home / Expenses / Income / quick add against the REAL backend (base URL from
+ * playwright.config.ts). Each test registers a fresh user, who starts
  * with the default "Main" account and "General" / "Other" categories.
  */
-test.use({ baseURL: process.env.VBX_E2E_BASE ?? 'http://127.0.0.1:5181' })
 
 const PASSWORD = 'e2e-pass-123'
 
@@ -35,8 +33,8 @@ async function typeAmount(page: Page, text: string) {
 
 async function openQuickAdd(page: Page) {
   if (isMobile(page))
-    await page.getByRole('navigation').getByRole('button', { name: 'Νέα καταχώριση' }).click()
-  else await page.getByRole('button', { name: 'Νέο έξοδο' }).first().click()
+    await page.getByRole('navigation').getByRole('button', { name: 'Νέο έξοδο ή έσοδο' }).click()
+  else await page.getByRole('complementary').getByRole('button', { name: 'Νέο έξοδο ή έσοδο' }).click()
 }
 
 test('quick add, edit, filter and delete an expense', async ({ page }) => {
@@ -48,7 +46,7 @@ test('quick add, edit, filter and delete an expense', async ({ page }) => {
   await page.getByRole('radio', { name: 'General' }).click()
   await page.getByLabel('Σημειώσεις').fill('καφές #e2eTag')
   await page.getByRole('button', { name: 'Αποθήκευση' }).click()
-  await expect(page.getByText('Καταχωρήθηκε: -12,50 € · General')).toBeVisible()
+  await expect(page.getByText('Καταχωρίστηκε: -12,50 € · General')).toBeVisible()
 
   // Home reflects it right away (month expenses + recent list).
   await expect(page.getByRole('list', { name: 'Πρόσφατα έξοδα' })).toContainText('καφές #e2eTag')
@@ -93,7 +91,7 @@ test('income from the Home quick action, and a #tag link opens its report', asyn
   await page.getByRole('radio', { name: 'Salary' }).click()
   await page.getByLabel('Σημειώσεις').fill('μισθός #δουλειά')
   await page.getByRole('button', { name: 'Αποθήκευση' }).click()
-  await expect(page.getByText('Καταχωρήθηκε: +1.850,00 € · Salary')).toBeVisible()
+  await expect(page.getByText('Καταχωρίστηκε: +1.850,00 € · Salary')).toBeVisible()
 
   // Hero totals come from /api/home
   await expect(page.getByText('1.850,00 €').first()).toBeVisible()

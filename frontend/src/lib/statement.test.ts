@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { dayMonthShort, statementLine } from './statement'
+import { dayMonthShort } from './dates'
+import { statementLine } from './statement'
 
 const st = {
   closed_on: '2026-11-05',
@@ -25,6 +26,13 @@ describe('card statement line', () => {
       text: 'Statement 200,00 € left of 300,00 € · was due 25 Nov',
       tone: 'negative',
     })
+  })
+
+  it('reads naturally in Greek', () => {
+    expect(statementLine(st, 'el').text).toMatch(/^Κατάσταση: 300,00 € · λήγει 25 Νοε/)
+    expect(statementLine({ ...st, paid: 100, remaining: 200 }, 'el').text).toMatch(
+      /^Κατάσταση: απομένουν 200,00 € από 300,00 €/,
+    )
   })
 
   it('soon is a warning, none and paid are quiet', () => {

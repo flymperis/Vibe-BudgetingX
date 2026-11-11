@@ -7,10 +7,9 @@ import type { Bootstrap } from '@/bootstrap/bootstrap'
 import { renderWithProviders } from '@/test/render'
 import type { Entry } from './entries'
 import { EntrySheet } from './EntrySheet'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const boot: Bootstrap = {
   user: { id: 1, username: 'u' },

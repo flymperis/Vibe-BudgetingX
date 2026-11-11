@@ -78,6 +78,15 @@ export function relativeDayLabel(iso: string, lang: Lang, todayIso: string = tod
   return fullDateLabel(iso, lang, todayIso)
 }
 
+/** "5 Νοε" / "5 Nov" (card statement and due days; old `{{ d.day }} {{ d.strftime('%b') }}`). */
+export function dayMonthShort(iso: string | null | undefined, lang: Lang): string {
+  const d = parseISODate(iso)
+  if (!d) return iso ?? ''
+  return new Intl.DateTimeFormat(LOCALES[lang], { day: 'numeric', month: 'short' })
+    .format(d)
+    .replace(/\.$/, '')
+}
+
 /** "10/11/2026" */
 export function shortDateLabel(iso: string, lang: Lang): string {
   const d = parseISODate(iso)
@@ -117,20 +126,76 @@ function monthDate(month: string): Date | null {
   return m ? new Date(Number(m[1]), Number(m[2]) - 1, 1) : null
 }
 
+/*
+ * Greek month names come from tables, not Intl: Chromium formats a lone
+ * `{ month: 'long' }` in the genitive ("Μαρτίου") while ICU builds differ on
+ * the month+year pattern, so the result would depend on the browser.
+ */
+const EL_NOMINATIVE = [
+  'Ιανουάριος',
+  'Φεβρουάριος',
+  'Μάρτιος',
+  'Απρίλιος',
+  'Μάιος',
+  'Ιούνιος',
+  'Ιούλιος',
+  'Αύγουστος',
+  'Σεπτέμβριος',
+  'Οκτώβριος',
+  'Νοέμβριος',
+  'Δεκέμβριος',
+] as const
+const EL_GENITIVE = [
+  'Ιανουαρίου',
+  'Φεβρουαρίου',
+  'Μαρτίου',
+  'Απριλίου',
+  'Μαΐου',
+  'Ιουνίου',
+  'Ιουλίου',
+  'Αυγούστου',
+  'Σεπτεμβρίου',
+  'Οκτωβρίου',
+  'Νοεμβρίου',
+  'Δεκεμβρίου',
+] as const
+
+export type MonthCase = 'nominative' | 'genitive'
+
+/**
+ * Name of month number 1..12: "Μάρτιος" (nominative, headings) or "Μαρτίου"
+ * (genitive, inside sentences: "το budget του Μαρτίου"). English has one form.
+ */
+export function monthNameOf(monthNumber: number, lang: Lang, form: MonthCase = 'nominative'): string {
+  if (!Number.isInteger(monthNumber) || monthNumber < 1 || monthNumber > 12) return String(monthNumber)
+  if (lang === 'el') return (form === 'genitive' ? EL_GENITIVE : EL_NOMINATIVE)[monthNumber - 1]
+  return new Intl.DateTimeFormat(LOCALES[lang], { month: 'long' }).format(new Date(2000, monthNumber - 1, 1))
+}
+
 /** "Νοέμβριος 2026" / "November 2026" */
 export function monthLabel(month: string, lang: Lang): string {
-  const d = monthDate(month)
-  if (!d) return month
-  const locale = LOCALES[lang]
-  return capitalize(new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(d), locale)
+  const m = MONTH_RE.exec(month)
+  if (!m) return month
+  return `${monthNameOf(Number(m[2]), lang)} ${m[1]}`
+}
+
+/** "Νοεμβρίου 2026" / "November 2026" (inside sentences: "το budget του Νοεμβρίου 2026") */
+export function monthLabelGenitive(month: string, lang: Lang): string {
+  const m = MONTH_RE.exec(month)
+  if (!m) return month
+  return `${monthNameOf(Number(m[2]), lang, 'genitive')} ${m[1]}`
 }
 
 /** "Νοέμβριος" / "November" (nominative, for headings) */
 export function monthName(month: string, lang: Lang): string {
-  const d = monthDate(month)
-  if (!d) return month
-  const locale = LOCALES[lang]
-  return capitalize(new Intl.DateTimeFormat(locale, { month: 'long' }).format(d), locale)
+  const m = MONTH_RE.exec(month)
+  return m ? monthNameOf(Number(m[2]), lang) : month
+}
+
+/** "Νοεμβρίου" / "November" (genitive, inside sentences) */
+export function monthNameGenitive(month: string, lang: Lang): string {
+  const m = MONTH_RE.exec(month)
+  return m ? monthNameOf(Number(m[2]), lang, 'genitive') : month
 }
 
 /** "Νοε" / "Nov" (chart axes, month grid) */

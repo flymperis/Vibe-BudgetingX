@@ -39,11 +39,6 @@ export function effectText(bill: Pick<BillActivity, 'effect' | 'i_paid'>, t: TFu
   return t('shared.effect.none')
 }
 
-/** Initial for avatars. */
-export function initial(name: string): string {
-  return (name.trim()[0] ?? '?').toLocaleUpperCase()
-}
-
 /** Payer / receiver names with "You" localised (i_paid / involved say which one is me). */
 export function paymentNames(
   p: Pick<PaymentActivity, 'from_name' | 'to_name' | 'i_paid' | 'involved'>,

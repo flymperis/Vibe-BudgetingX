@@ -3,8 +3,9 @@ import { NavLink, useLocation } from 'react-router'
 import { NAV_ITEMS } from '@/app/nav'
 import { useQuickAdd } from '@/app/quick-add'
 import { useLogout, useSession } from '@/auth/session'
+import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/ui/button'
-import { useMonthSearch } from '@/hooks/useMonth'
+import { useKeptSearch, useMonthSearch } from '@/hooks/useMonth'
 import { useT } from '@/i18n'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,8 @@ export function Sidebar({ className }: { className?: string }) {
   const t = useT()
   const { pathname } = useLocation()
   const search = useMonthSearch()
+  // Sub-pages of the open section keep its filters too (report year / account).
+  const subSearch = useKeptSearch(['month', 'year', 'account'])
   const quickAdd = useQuickAdd()
   const session = useSession()
   const logout = useLogout()
@@ -47,7 +50,7 @@ export function Sidebar({ className }: { className?: string }) {
       <div className="px-3 pb-3">
         <Button className="h-10 w-full rounded-xl" onClick={quickAdd.open}>
           <Plus aria-hidden />
-          {t('quickAdd.newExpense')}
+          {t('nav.add')}
         </Button>
       </div>
       <nav aria-label={t('nav.main')} className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
@@ -73,7 +76,7 @@ export function Sidebar({ className }: { className?: string }) {
                     {item.children.map((child) => (
                       <li key={child.path}>
                         <NavLink
-                          to={{ pathname: child.path, search }}
+                          to={{ pathname: child.path, search: subSearch }}
                           className={({ isActive }) => cn(itemClass(isActive), 'h-8 text-[13px]')}
                         >
                           {t(child.label)}
@@ -88,12 +91,7 @@ export function Sidebar({ className }: { className?: string }) {
         </ul>
       </nav>
       <div className="flex items-center gap-2 border-t border-sidebar-border px-4 py-3">
-        <span
-          aria-hidden
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground uppercase"
-        >
-          {username?.charAt(0) ?? '·'}
-        </span>
+        <Avatar name={username ?? ''} me className="size-8 text-sm" />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{username}</span>
         <Button
           variant="ghost"

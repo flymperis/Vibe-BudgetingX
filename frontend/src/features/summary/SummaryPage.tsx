@@ -1,21 +1,20 @@
 import { Table2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useToday } from '@/bootstrap/bootstrap'
+import { AccountBalancesList, BalanceScopeHint } from '@/components/AccountBalancesList'
 import { HeroCard } from '@/components/Cards'
 import { CategoryIcon, IconTile } from '@/components/CategoryIcon'
 import { EmptyState } from '@/components/EmptyState'
-import { ListGroup, ListRow } from '@/components/ListGroup'
+import { ListGroup, ListRow, SectionHeader } from '@/components/ListGroup'
 import { Money } from '@/components/Money'
 import { MonthSwitcher } from '@/components/MonthSwitcher'
 import { PageHeader } from '@/components/PageHeader'
 import { CardSkeleton, ListSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { useMonth } from '@/hooks/useMonth'
-import { useLang, useT } from '@/i18n'
-import { fullDateLabel } from '@/lib/dates'
+import { useT } from '@/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
-import { useSummary, type BalanceAccount, type Summary } from './api'
+import { useSummary, type Summary } from './api'
 
 export default function SummaryPage() {
   const t = useT()
@@ -55,8 +54,6 @@ function EmptyRow({ children }: { children: ReactNode }) {
 
 function SummaryBody({ data }: { data: Summary }) {
   const t = useT()
-  const lang = useLang()
-  const today = useToday()
   const budget = data.budget ?? null
 
   return (
@@ -142,49 +139,21 @@ function SummaryBody({ data }: { data: Summary }) {
         </ListGroup>
       </div>
 
-      <ListGroup
-        className="mt-6"
-        header={t('summary.balances')}
-        headerAside={
-          <span className="text-xs text-muted-foreground">
-            {data.balance_scope === 'today'
-              ? t('summary.balancesToday')
-              : t('summary.balancesAt', { date: fullDateLabel(data.balance_as_of, lang, today) })}
-          </span>
-        }
-      >
-        {data.accounts.length ? (
-          <>
-            {data.accounts.map((a) => (
-              <AccountRow key={a.id} account={a} />
-            ))}
-            {data.has_cards ? (
-              <>
-                <ListRow
-                  title={t('summary.cashTotal')}
-                  amount={data.cash_total}
-                  amountProps={{ tone: 'all' }}
-                  className="min-h-12 bg-muted/40"
-                />
-                <ListRow
-                  title={t('summary.cardsTotal')}
-                  amount={data.cards_total}
-                  amountProps={{ tone: 'all' }}
-                  className="min-h-12 bg-muted/40"
-                />
-              </>
-            ) : null}
-            <ListRow
-              title={<span className="font-semibold">{t('summary.netTotal')}</span>}
-              amount={data.net_total}
-              amountProps={{ tone: 'all' }}
-              className="min-h-12 bg-muted/40"
-            />
-          </>
-        ) : (
-          <EmptyRow>{t('summary.noAccounts')}</EmptyRow>
-        )}
-      </ListGroup>
+      <SectionHeader title={t('accounts.balances')} />
+      <AccountBalancesList
+        accounts={data.accounts}
+        totals={data}
+        hasCards={data.has_cards}
+        payTo={(a) => ({ pathname: '/transfers', search: `?pay_card=${a.id}&month=${data.month}` })}
+        empty={<p className="mx-1 text-sm text-muted-foreground">{t('accounts.none')}</p>}
+      />
+      {data.accounts.length ? (
+        <BalanceScopeHint
+          throughToday={data.balance_scope === 'today'}
+          asOf={data.balance_as_of}
+          className="mt-2"
+        />
+      ) : null}
     </>
   )
 }
@@ -228,26 +197,5 @@ function ExpenseBudgetRow({
       </span>
       <Money value={spent} tone="none" className="text-[15px] font-semibold" />
     </li>
-  )
-}
-
-function AccountRow({ account }: { account: BalanceAccount }) {
-  const t = useT()
-  const card = account.card
-  return (
-    <ListRow
-      icon={<IconTile tone="muted">{account.name.charAt(0).toUpperCase()}</IconTile>}
-      title={account.name}
-      subtitle={
-        card?.limit != null
-          ? t('summary.cardAvailable', {
-              available: formatMoney(card.available),
-              limit: formatMoney(card.limit),
-            })
-          : account.bank?.name
-      }
-      amount={account.current_balance}
-      amountProps={{ tone: 'all' }}
-    />
   )
 }

@@ -12,7 +12,7 @@ import { CardSkeleton, ListSkeleton } from '@/components/skeletons'
 import { Button } from '@/components/ui/button'
 import { useMonth } from '@/hooks/useMonth'
 import { useLang, useT } from '@/i18n'
-import { monthLabel } from '@/lib/dates'
+import { monthLabel, monthLabelGenitive } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import {
@@ -157,7 +157,7 @@ function BudgetOn({
 
   const doClear = async () => {
     const ok = await confirm({
-      title: t('budget.clearConfirmTitle', { month: monthName }),
+      title: t('budget.clearConfirmTitle', { month: monthLabelGenitive(month, lang) }),
       description: t('budget.clearConfirmText'),
       confirmLabel: t('budget.clearMonth'),
       destructive: true,

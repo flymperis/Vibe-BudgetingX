@@ -25,8 +25,8 @@ afterEach(() => vi.useRealTimers())
 
 describe('bootstrap sync (recurring posting)', () => {
   it('words the toast like the old flash', () => {
-    expect(postedRecurringMessage(1)).toBe('Καταχωρήθηκε 1 επαναλαμβανόμενη κίνηση.')
-    expect(postedRecurringMessage(3)).toBe('Καταχωρήθηκαν 3 επαναλαμβανόμενες κινήσεις.')
+    expect(postedRecurringMessage(1)).toBe('Προστέθηκε 1 επαναλαμβανόμενη καταχώριση.')
+    expect(postedRecurringMessage(3)).toBe('Προστέθηκαν 3 επαναλαμβανόμενες καταχωρίσεις.')
   })
 
   it('toasts and refreshes money queries once per response that posted', () => {

@@ -1,32 +1,38 @@
 import { useCallback } from 'react'
 import { useLocation, useNavigate, type To } from 'react-router'
 
+/** Old-style `?group=<id>` (and links from the old app's `panel=shared&group=`). */
 export const GROUP_PARAM = 'group'
 
-/** Search string with ?group set (or removed), other params (month…) kept. */
-export function withGroup(search: string, groupId: number | null): string {
+export const SHARED_PATH = '/shared'
+export const groupPath = (groupId: number) => `${SHARED_PATH}/groups/${groupId}`
+
+/** The search string without `?group` (other params, e.g. the month, are kept). */
+export function withoutGroup(search: string): string {
   const params = new URLSearchParams(search)
-  if (groupId === null) params.delete(GROUP_PARAM)
-  else params.set(GROUP_PARAM, String(groupId))
+  params.delete(GROUP_PARAM)
   const qs = params.toString()
   return qs ? `?${qs}` : ''
 }
 
-/** Links between the overview and a group, inside /shared. */
+/** `?group=<id>` as a positive integer, else null. */
+export function groupFromSearch(search: string): number | null {
+  const id = Number(new URLSearchParams(search).get(GROUP_PARAM))
+  return Number.isInteger(id) && id > 0 ? id : null
+}
+
+/** Links between the overview (/shared) and a group (/shared/groups/:groupId). */
 export function useGroupNav() {
   const location = useLocation()
   const navigate = useNavigate()
-  const groupTo = useCallback(
-    (groupId: number): To => ({ pathname: location.pathname, search: withGroup(location.search, groupId) }),
-    [location.pathname, location.search],
-  )
-  const overviewTo: To = { pathname: location.pathname, search: withGroup(location.search, null) }
+  const search = withoutGroup(location.search)
+  const groupTo = useCallback((groupId: number): To => ({ pathname: groupPath(groupId), search }), [search])
+  const overviewTo: To = { pathname: SHARED_PATH, search }
   const openGroup = useCallback((groupId: number) => navigate(groupTo(groupId)), [navigate, groupTo])
   /** After leaving / deleting: back to the overview without a dead entry to return to. */
   const leaveToOverview = useCallback(
-    () =>
-      navigate({ pathname: location.pathname, search: withGroup(location.search, null) }, { replace: true }),
-    [navigate, location.pathname, location.search],
+    () => navigate({ pathname: SHARED_PATH, search }, { replace: true }),
+    [navigate, search],
   )
   return { groupTo, overviewTo, openGroup, leaveToOverview }
 }

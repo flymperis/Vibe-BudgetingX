@@ -32,8 +32,9 @@ export type AssetKind = 'crypto' | 'stocks'
 export const investmentKeys = createKeys('investments')
 export const investmentScreenKey = investmentKeys.custom('screen')
 
-export const fetchInvestments = (params: { refresh_crypto?: boolean; refresh_stocks?: boolean } = {}) =>
-  api.get<Investments>('/investments', { params: { live: true, ...params } })
+export const fetchInvestments = (
+  params: { live?: boolean; refresh_crypto?: boolean; refresh_stocks?: boolean } = {},
+) => api.get<Investments>('/investments', { params: { live: true, ...params } })
 
 /**
  * The investments payload. `onOpen` is set by the screen's layout only: it
@@ -67,18 +68,33 @@ export function useRefreshPrices() {
   })
 }
 
-/** Investments are not money movements: refresh this screen, the reports (portfolio charts) and home. */
-export function invalidateInvestments(qc: QueryClient) {
-  return Promise.all([
-    qc.invalidateQueries({ queryKey: investmentKeys.all }),
+/**
+ * After a transaction is saved or deleted. Investments are not money
+ * movements: this screen, the reports (portfolio charts) and home change.
+ *
+ * The screen is updated at once from `live=false` (holdings and history from
+ * the database, prices from the server's in-process cache, never the network),
+ * then the live lookup the old redirect did runs in the background. Waiting
+ * for the live lookup (CoinGecko / Yahoo, seconds when uncached or rate
+ * limited) before showing the new row made the list lag behind the save; it
+ * was the cause of the rare e2e timeout after "add".
+ */
+export async function invalidateInvestments(qc: QueryClient) {
+  await Promise.all([
     qc.invalidateQueries({ queryKey: ['reports'] }),
     qc.invalidateQueries({ queryKey: qk.home }),
   ])
+  try {
+    await qc.cancelQueries({ queryKey: investmentScreenKey })
+    qc.setQueryData(investmentScreenKey, await fetchInvestments({ live: false }))
+  } catch {
+    /* the live refetch below still runs */
+  }
+  return qc.invalidateQueries({ queryKey: investmentKeys.all })
 }
 
 type SaveArgs =
-  | { kind: 'crypto'; id?: number; body: CryptoTxIn }
-  | { kind: 'stocks'; id?: number; body: StockTxIn }
+  { kind: 'crypto'; id?: number; body: CryptoTxIn } | { kind: 'stocks'; id?: number; body: StockTxIn }
 
 export function useSaveTransaction() {
   const qc = useQueryClient()

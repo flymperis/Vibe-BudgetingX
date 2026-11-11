@@ -1,4 +1,5 @@
 import { Loader2, PiggyBank, Plus, ReceiptText } from 'lucide-react'
+import { AddButton } from '@/components/AddButton'
 import { useEffect, useId, useRef } from 'react'
 import { useSearchParams } from 'react-router'
 import { useQuickAdd } from '@/app/quick-add'
@@ -85,16 +86,7 @@ export function EntryListScreen({ kind }: { kind: EntryKind }) {
       <PageHeader
         title={title}
         eyebrow={allMonths ? t('money.allMonths') : monthLabel(month, lang)}
-        actions={
-          <Button
-            size={isDesktop ? 'touch' : 'icon-touch'}
-            onClick={() => quickAdd.open({ kind })}
-            aria-label={addLabel}
-          >
-            <Plus aria-hidden />
-            {isDesktop ? addLabel : null}
-          </Button>
-        }
+        actions={<AddButton label={addLabel} onClick={() => quickAdd.open({ kind })} />}
       />
 
       <div className="mb-2 -ml-2 flex flex-wrap items-center gap-1">

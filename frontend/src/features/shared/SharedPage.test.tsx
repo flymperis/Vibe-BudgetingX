@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { setCsrfToken } from '@/api/client'
 import { renderWithProviders } from '@/test/render'
+import SharedGroupPage from './SharedGroupPage'
 import SharedPage from './SharedPage'
+import { json } from '@/test/helpers'
 
 const fetchMock = vi.fn<typeof fetch>()
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const overview = {
   contacts: [{ id: 3, name: 'Άννα', login: 'anna', group_count: 1 }],
@@ -44,16 +44,22 @@ describe('SharedPage overview', () => {
     expect(await screen.findByText('Συνολικά χρωστάς')).toBeInTheDocument()
     expect(screen.getByText('Εσύ, Άννα')).toBeInTheDocument()
     expect(screen.getByText(/χρωστάς 12,50/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Κρήτη/ })).toHaveAttribute('href', '/shared?group=7')
+    expect(screen.getByRole('link', { name: /Κρήτη/ })).toHaveAttribute('href', '/shared/groups/7')
     expect(screen.getByText('Ο/Η nikos σε προσκάλεσε στην ομάδα «Σπίτι»')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Συμμετοχή' }))
-    await waitFor(() => expect(router.state.location.search).toBe('?group=11'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/shared/groups/11'))
   })
 
   it('shows "not found" for a group I cannot open', async () => {
     fetchMock.mockResolvedValue(json(404, { detail: 'Group not found.' }))
-    renderWithProviders(<SharedPage />, { path: '/shared?group=99' })
+    const { router } = renderWithProviders(<SharedPage />, {
+      path: '/shared?group=99&month=2026-01',
+      routes: [{ path: '/shared/groups/:groupId', element: <SharedGroupPage /> }],
+    })
+    // The old ?group= link lands on the real route, keeping the other params.
     expect(await screen.findByText('Η ομάδα δεν βρέθηκε')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/shared/groups/99')
+    expect(router.state.location.search).toBe('?month=2026-01')
   })
 })

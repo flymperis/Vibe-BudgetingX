@@ -35,17 +35,3 @@ export function chartPoints(rows: YearlyRow[], label: (month: number) => string)
     expenses: r.expenses,
   }))
 }
-
-/**
- * Month name in the nominative ("Μάρτιος"). Chromium formats a lone
- * `{ month: 'long' }` in the genitive for el-GR ("Μαρτίου"), so take the
- * month part of "Μάρτιος 2026" instead (see docs/screens/planning.md).
- */
-export function nominativeMonth(year: number, month: number, locale: string): string {
-  const d = new Date(year, month - 1, 1)
-  const part = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
-    .formatToParts(d)
-    .find((p) => p.type === 'month')?.value
-  const name = part ?? String(month)
-  return name.charAt(0).toLocaleUpperCase(locale) + name.slice(1)
-}
