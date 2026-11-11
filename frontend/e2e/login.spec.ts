@@ -52,7 +52,7 @@ test('login page: shows the server error inline, then logs in and lands home', a
   // allow_registration is false: no register link
   await expect(page.getByRole('link', { name: 'Δημιουργία λογαριασμού' })).toHaveCount(0)
 
-  await page.getByLabel('Όνομα χρήστη').fill('fotis')
+  await page.getByLabel('Όνομα χρήστη').fill('demo_user')
   await page.getByLabel('Κωδικός', { exact: true }).fill('nope')
   await page.getByRole('button', { name: 'Σύνδεση' }).click()
   await expect(page.getByRole('alert')).toHaveText('Invalid username or password.')

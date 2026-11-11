@@ -1,14 +1,14 @@
 # Vibe Budgeting X — architecture and rules
 
-This is the rewrite of Vibe Budgeting. The old app lives in `C:\Users\fotis\code\Vibe-Budgeting`
+This is the rewrite of Vibe Budgeting. The old app lives in `<old app repo>`
 (Flask + Jinja + SQLite) and runs in production. **It is the specification.** The new app must do
 everything the old one does, on the same database file, with a native-app-like UI.
 
 ## Hard rules (every contributor, human or agent)
 
-1. **Never modify anything under `C:\Users\fotis\code\Vibe-Budgeting`.** Read it freely. Do not run
+1. **Never modify anything under `<old app repo>`.** Read it freely. Do not run
    its app against any database file that lives in that folder. Do not `git` commit/checkout there.
-2. **Never touch bazzite-server or any production data.** No SSH, no deploy.
+2. **Never touch the production server or any production data.** No SSH, no deploy.
 3. **The database schema does not change.** Same tables, same columns, same meaning as the old app.
    A database written by the old app must open in the new app unchanged, and the other way round.
    If a feature seems to need a schema change, stop and report it; do not make it.

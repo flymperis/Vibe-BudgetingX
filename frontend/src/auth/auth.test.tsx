@@ -29,7 +29,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     renderWithProviders(<LoginPage />, { path: '/login' })
 
-    await user.type(screen.getByLabelText('Όνομα χρήστη'), 'fotis')
+    await user.type(screen.getByLabelText('Όνομα χρήστη'), 'demo_user')
     await user.type(screen.getByLabelText('Κωδικός'), 'bad')
     await user.click(screen.getByRole('button', { name: 'Σύνδεση' }))
 

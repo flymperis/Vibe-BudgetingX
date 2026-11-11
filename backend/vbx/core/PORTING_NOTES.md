@@ -1,6 +1,6 @@
 # vbx/core porting notes
 
-Source: `C:\Users\fotis\code\Vibe-Budgeting\<module>.py` (read-only). Every module was copied
+Source: `<old app repo>\<module>.py` (read-only). Every module was copied
 byte for byte (original line endings kept: `banks`, `excel_io`, `finance`, `helpers`, `prices`,
 `telegram_bot`, `telegram_parse` are CRLF in the old repo and stay CRLF; the others are LF). Then:
 

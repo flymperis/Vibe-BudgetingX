@@ -1,6 +1,6 @@
 # Test parity: old app -> Vibe Budgeting X
 
-Every test function of the old app (`C:\Users\fotis\code\Vibe-Budgeting\tests`, found with `grep def test_`) and the new test that covers it. A row is PORTED only when the named new function exists in `backend/tests/` (checked by script when this file was generated). New test files are named like the old ones; the four Telegram-tag tests of the old `test_tags.py` live in `test_telegram_tags.py`.
+Every test function of the old app (`<old app repo>\tests`, found with `grep def test_`) and the new test that covers it. A row is PORTED only when the named new function exists in `backend/tests/` (checked by script when this file was generated). New test files are named like the old ones; the four Telegram-tag tests of the old `test_tags.py` live in `test_telegram_tags.py`.
 
 ## Summary
 

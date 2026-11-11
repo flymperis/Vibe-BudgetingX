@@ -3,12 +3,12 @@
 Read first: `docs/ARCHITECTURE.md` (hard rules are binding), `docs/FRONTEND.md` (conventions; follow
 them exactly), then the parity notes of the backend domains you consume (`docs/parity/A.md` … `E.md`:
 endpoint lists, deviations, and "frontend must know" remarks). The approved look is the mockup at
-`C:\Users\fotis\AppData\Local\Temp\claude\bc591df24049c261\5035edbb-98a8-4bc8-8010-798a6ae49205\scratchpad\mockup\index.html`
+`the approved mockup (kept outside this repository)`
 and the foundation's `/dev/components` page.
 
 ## What "done" means
 
-The old app (`C:\Users\fotis\code\Vibe-Budgeting`, read-only) is the functional spec. For each old
+The old app (`<old app repo>`, read-only) is the functional spec. For each old
 panel in your group, read its Jinja template (`templates/panels/_*.html`, `_macros.html`), the
 relevant part of `static/app.js`, and the routes. **Every piece of information the old panel shows
 and every action it offers must exist in your new screen** (it may be arranged differently and

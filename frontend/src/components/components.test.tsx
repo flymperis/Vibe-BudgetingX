@@ -92,7 +92,7 @@ describe('i18n', () => {
     expect(result.current('nav.home')).toBe('Αρχική')
     act(() => setLang('en'))
     expect(result.current('nav.home')).toBe('Home')
-    expect(result.current('auth.hello', { name: 'Fotis' })).toBe('Hi, Fotis')
+    expect(result.current('auth.hello', { name: 'Maria' })).toBe('Hi, Maria')
     expect(localStorage.getItem('vbx.lang')).toBe('en')
     act(() => setLang('el'))
     expect(getLang()).toBe('el')
