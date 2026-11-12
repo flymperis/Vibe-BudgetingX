@@ -1,17 +1,18 @@
-import { useId, useState } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { useMutationLock } from '@/hooks/useMutationLock'
 import { toast } from 'sonner'
 import { errorMessage } from '@/app/query-client'
 import { useBootstrap, useToday } from '@/bootstrap/bootstrap'
 import { FieldError } from '@/components/FormField'
 import { ResponsiveSheet } from '@/components/ResponsiveSheet'
+import { AmountKeypad } from '@/components/Amount'
 import { Button } from '@/components/ui/button'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 import { useT, type TFunction } from '@/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { useSaveEntry, type Entry, type EntryKind } from './entries'
-import { EntryForm } from './EntryForm'
+import { EntryAmount, EntryFields } from './EntryForm'
 import {
   defaultAccountId,
   draftFromEntry,
@@ -147,31 +148,63 @@ export function EntrySheet({
   }
 
   const message = invalid ? t(ERROR_KEY[invalid]) : serverError
+  const formProps = { kind, draft, onChange: patch, invalid, autoFocusAmount: !editing }
+  const saveButton = (
+    <Button size="block" type="submit" form={formId} disabled={save.isPending}>
+      {t('common.save')}
+    </Button>
+  )
+  const kindSwitch = allowKindSwitch && !editing ? <KindSwitch value={kind} onChange={switchKind} /> : null
+  const formAttrs = {
+    id: formId,
+    noValidate: true,
+    onSubmit: (e: FormEvent) => {
+      e.preventDefault()
+      submit()
+    },
+  }
 
+  if (isDesktop) {
+    return (
+      <ResponsiveSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={titleFor(t, kind, editing)}
+        hideTitle={allowKindSwitch && !editing}
+        footer={saveButton}
+      >
+        {kindSwitch}
+        <form {...formAttrs} className="min-w-0">
+          <EntryAmount {...formProps} />
+          <EntryFields {...formProps} />
+          <FieldError>{message}</FieldError>
+        </form>
+      </ResponsiveSheet>
+    )
+  }
+
+  // Mobile: a full-height sheet. The fields scroll at the top; the amount, the
+  // keypad and Save stay pinned at the bottom so what you type is always in view.
   return (
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
       title={titleFor(t, kind, editing)}
       hideTitle={allowKindSwitch && !editing}
+      className="data-[vaul-drawer-direction=bottom]:h-[92dvh]"
+      footerClassName="border-t pt-3"
       footer={
-        <Button size="block" type="submit" form={formId} disabled={save.isPending}>
-          {t('common.save')}
-        </Button>
+        <>
+          <EntryAmount {...formProps} />
+          <FieldError>{message}</FieldError>
+          <AmountKeypad value={draft.amount} onChange={(amount) => patch({ amount })} className="mt-1" />
+          {saveButton}
+        </>
       }
     >
-      {allowKindSwitch && !editing ? <KindSwitch value={kind} onChange={switchKind} /> : null}
-      <form
-        id={formId}
-        noValidate
-        onSubmit={(e) => {
-          e.preventDefault()
-          submit()
-        }}
-        className={cn('min-w-0', !isDesktop && 'pt-1')}
-      >
-        <EntryForm kind={kind} draft={draft} onChange={patch} invalid={invalid} autoFocusAmount={!editing} />
-        <FieldError>{message}</FieldError>
+      {kindSwitch}
+      <form {...formAttrs} className="min-w-0 pt-1 pb-2">
+        <EntryFields {...formProps} />
       </form>
     </ResponsiveSheet>
   )

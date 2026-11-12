@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { Link } from 'react-router'
 import { useBootstrap, useToday } from '@/bootstrap/bootstrap'
-import { AmountDisplay, AmountInput, AmountKeypad } from '@/components/Amount'
+import { AmountDisplay, AmountInput } from '@/components/Amount'
 import { CategoryGlyph } from '@/components/CategoryIcon'
 import { ChipPicker } from '@/components/ChipPicker'
 import { FieldLabel } from '@/components/FormField'
@@ -14,6 +14,14 @@ import type { EntryKind } from './entries'
 import type { DraftError, EntryDraft } from './entry-form'
 import { NotesField } from './NotesField'
 
+/**
+ * Fields of an expense / income entry, in the order of the fast path:
+ * amount -> category -> (account, day, notes) -> save.
+ *
+ * Desktop renders them in one column. On mobile EntrySheet splits them:
+ * <EntryFields> scrolls at the top and <EntryAmount> + <AmountKeypad> stay
+ * pinned at the bottom, so the typed amount is always in view.
+ */
 export interface EntryFormProps {
   kind: EntryKind
   draft: EntryDraft
@@ -23,17 +31,11 @@ export interface EntryFormProps {
   autoFocusAmount?: boolean
 }
 
-/**
- * Fields of an expense / income entry, in the order of the fast path:
- * amount -> category -> (account, day, notes) -> save. Keypad on mobile.
- */
-export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: EntryFormProps) {
+/** Amount with the expense / refund sign toggle: text input on desktop, display on mobile. */
+export function EntryAmount({ kind, draft, onChange, invalid, autoFocusAmount }: EntryFormProps) {
   const t = useT()
-  const boot = useBootstrap()
-  const today = useToday()
   const isDesktop = useIsDesktop()
-  const ids = { amount: useId(), cat: useId(), acc: useId(), day: useId(), notes: useId() }
-  const categories = kind === 'expense' ? boot.categories : boot.income_categories
+  const id = useId()
   const isExpense = kind === 'expense'
   const sign = isExpense ? (draft.refund ? '+' : '-') : '+'
 
@@ -56,7 +58,7 @@ export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: E
 
   return (
     <div>
-      <label htmlFor={ids.amount} className="sr-only">
+      <label htmlFor={id} className="sr-only">
         {t('common.amount')}
       </label>
       {isDesktop ? (
@@ -64,7 +66,7 @@ export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: E
           {signToggle}
           <div className="min-w-0 flex-1" aria-invalid={invalid === 'amount' || undefined}>
             <AmountInput
-              id={ids.amount}
+              id={id}
               value={draft.amount}
               onChange={(amount) => onChange({ amount })}
               autoFocus={autoFocusAmount}
@@ -78,14 +80,29 @@ export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: E
           <AmountDisplay
             value={draft.amount}
             sign={sign}
-            className={cn('px-12', invalid === 'amount' && 'text-negative')}
+            className={cn('px-12 text-[40px]', invalid === 'amount' && 'text-negative')}
           />
         </div>
       )}
       {isExpense && draft.refund ? (
         <p className="mt-1 text-center text-xs font-medium text-positive">{t('money.refund')}</p>
       ) : null}
+    </div>
+  )
+}
 
+/** Category, account, day and notes. */
+export function EntryFields({ kind, draft, onChange, invalid }: EntryFormProps) {
+  const t = useT()
+  const boot = useBootstrap()
+  const today = useToday()
+  const isDesktop = useIsDesktop()
+  const ids = { cat: useId(), acc: useId(), day: useId(), notes: useId() }
+  const categories = kind === 'expense' ? boot.categories : boot.income_categories
+  const isExpense = kind === 'expense'
+
+  return (
+    <div>
       <FieldLabel id={ids.cat} className={cn(invalid === 'category' && 'text-negative')}>
         {t('common.category')}
       </FieldLabel>
@@ -148,10 +165,6 @@ export function EntryForm({ kind, draft, onChange, invalid, autoFocusAmount }: E
         recentTags={boot.recent_tags}
         allTags={boot.tag_names}
       />
-
-      {!isDesktop ? (
-        <AmountKeypad value={draft.amount} onChange={(amount) => onChange({ amount })} className="mt-4" />
-      ) : null}
     </div>
   )
 }
