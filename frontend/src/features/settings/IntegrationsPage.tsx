@@ -8,8 +8,9 @@ import { useT } from '@/i18n'
 import { AiSettingsCard } from './AiSettingsCard'
 import { useIntegrations } from './api'
 import { TelegramCard } from './TelegramCard'
+import { VoiceSettingsCard } from './VoiceSettingsCard'
 
-/** /settings/integrations: local AI (Ollama) and the Telegram bot. */
+/** /settings/integrations: local AI (Ollama), voice messages (Whisper) and the Telegram bot. */
 export default function IntegrationsPage() {
   const t = useT()
   const q = useIntegrations()
@@ -34,7 +35,10 @@ export default function IntegrationsPage() {
         />
       ) : (
         <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
-          <AiSettingsCard settings={q.data.ai} />
+          <div className="space-y-4">
+            <AiSettingsCard settings={q.data.ai} />
+            <VoiceSettingsCard settings={q.data.whisper} />
+          </div>
           {/* Remount when the server state changes (linked, code issued) so the forms start from it. */}
           <TelegramCard
             key={`${q.data.telegram.linked}-${q.data.telegram.link?.default_account_id ?? ''}`}

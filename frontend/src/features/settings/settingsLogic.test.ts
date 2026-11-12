@@ -20,6 +20,9 @@ import {
   notifyFormFromPrefs,
   validateAi,
   validateNotify,
+  validateWhisper,
+  whisperFormFromSettings,
+  buildWhisperBody,
 } from './integrations'
 
 const t = (k: MessageKey, p?: TParams) => translate(k, p, 'en')
@@ -165,5 +168,35 @@ describe('integrations', () => {
     expect(modelsStatus(0).key).toBe('settings.aiModelsNone')
     expect(modelsStatus(3)).toEqual({ key: 'settings.aiModelsMany', n: 3 })
     expect(clockOf('2026-11-11T01:15:00')).toBe('01:15')
+  })
+})
+
+describe('voice settings (Whisper)', () => {
+  const saved = {
+    whisper_enabled: false,
+    whisper_url: '',
+    whisper_model: '',
+    whisper_language: 'el',
+    default_model: 'deepdml/faster-whisper-large-v3-turbo-ct2',
+  }
+
+  it('round-trips the form and trims the body', () => {
+    const f = { ...whisperFormFromSettings(saved), enabled: true, url: ' http://w:8000 ', language: ' EL ' }
+    expect(buildWhisperBody(f)).toEqual({
+      whisper_enabled: true,
+      whisper_url: 'http://w:8000',
+      whisper_model: '',
+      whisper_language: 'el',
+    })
+  })
+
+  it('checks the same rules as the server', () => {
+    const f = whisperFormFromSettings(saved)
+    expect(validateWhisper(f)).toBeNull()
+    expect(validateWhisper({ ...f, enabled: true })).toBe('settings.errWhisperUrl')
+    expect(validateWhisper({ ...f, url: 'w:8000' })).toBe('settings.errWhisperUrlScheme')
+    expect(validateWhisper({ ...f, language: 'Greek' })).toBe('settings.errWhisperLanguage')
+    expect(validateWhisper({ ...f, language: '' })).toBeNull()
+    expect(t('settings.errWhisperUrl')).toContain('Whisper URL')
   })
 })

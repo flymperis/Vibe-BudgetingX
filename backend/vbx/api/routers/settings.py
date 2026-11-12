@@ -35,6 +35,9 @@ from ..schemas.settings import (
     TelegramServerIn,
     TelegramServerSaved,
     TelegramStatus,
+    WhisperSettings,
+    WhisperSettingsIn,
+    WhisperSettingsSaved,
 )
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -69,6 +72,28 @@ def _parse_ai(body: AiSettingsIn) -> dict:
         return integrations.parse_integration_form(_ai_form(body))
     except ValueError as exc:
         raise ApiError(400, str(exc)) from None
+
+
+def _parse_whisper(body: WhisperSettingsIn) -> dict:
+    form = _form(
+        {
+            "whisper_enabled": _checkbox(body.whisper_enabled),
+            "whisper_url": body.whisper_url,
+            "whisper_model": body.whisper_model,
+            "whisper_language": body.whisper_language,
+        }
+    )
+    try:
+        return integrations.parse_whisper_form(form)
+    except ValueError as exc:
+        raise ApiError(400, str(exc)) from None
+
+
+def _whisper_out(conn, uid: int) -> WhisperSettings:
+    return WhisperSettings(
+        **integrations.get_whisper_user_settings(conn, uid),
+        default_model=integrations.DEFAULT_WHISPER_MODEL,
+    )
 
 
 def _parse_server(conn, body: TelegramServerIn) -> dict:
@@ -117,6 +142,7 @@ def get_integrations(user: User, conn: DB):
 
     return IntegrationsOut(
         ai=AiSettings(**user_integrations),
+        whisper=_whisper_out(conn, uid),
         telegram=TelegramStatus(
             bot_token_set=telegram_server["bot_token_set"],
             enabled=telegram_enabled,
@@ -171,6 +197,26 @@ def list_integration_models(user: User, base_url: str | None = None):
     except (json.JSONDecodeError, OSError, TimeoutError) as exc:
         raise ApiError(502, f"Connection failed: {exc}") from None
     return ModelsOut(models=models)
+
+
+# --- voice messages (Whisper) -----------------------------------------------------------
+
+
+@router.put("/integrations/whisper", response_model=WhisperSettingsSaved)
+def save_whisper(body: WhisperSettingsIn, user: User, conn: DB):
+    settings = _parse_whisper(body)
+    integrations.save_whisper_user_settings(conn, user.id, settings)
+    return WhisperSettingsSaved(message="Voice settings saved.", settings=_whisper_out(conn, user.id))
+
+
+@router.post("/integrations/whisper/test", response_model=OkOut)
+def test_whisper(body: WhisperSettingsIn, user: User):
+    """Tests the settings as typed (not saved), even while voice is switched off."""
+    settings = _parse_whisper(body)
+    ok, message = integrations.test_whisper_connection(
+        integrations.whisper_config({**settings, "whisper_enabled": True})
+    )
+    return OkOut(ok=ok, message=message)
 
 
 # --- Telegram bot ---------------------------------------------------------------------

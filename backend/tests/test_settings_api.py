@@ -88,6 +88,13 @@ def test_defaults_for_a_new_user(client, tg):
         "ai_timeout": 30,
         "ai_ocr_model": "",
     }
+    assert body["whisper"] == {
+        "whisper_enabled": False,
+        "whisper_url": "",
+        "whisper_model": "",
+        "whisper_language": "el",
+        "default_model": integrations.DEFAULT_WHISPER_MODEL,
+    }
     t = body["telegram"]
     assert (t["bot_token_set"], t["enabled"], t["bot_username"], t["linked"], t["link"], t["link_code"]) == (
         False,
@@ -429,3 +436,70 @@ def test_notification_prefs(client):
         assert resp.status_code == 400 and resp.json() == {"detail": message}, days
     prefs = api.get("/api/settings/integrations").json()["telegram"]["notify_prefs"]
     assert prefs["budget"] is False and prefs["card_days"] == 3  # nothing saved by a failed form
+
+
+# --- voice messages (Whisper) ----------------------------------------------------------
+
+
+def test_whisper_settings_are_saved_and_kept_apart_from_ai(client):
+    api = register_and_login(client, "set-whisper")
+    resp = api.put(
+        "/api/settings/integrations/whisper",
+        json={
+            "whisper_enabled": True,
+            "whisper_url": " http://bazzite-server:8000/ ",
+            "whisper_model": " Systran/faster-whisper-small ",
+            "whisper_language": " EL ",
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    expected = {
+        "whisper_enabled": True,
+        "whisper_url": "http://bazzite-server:8000",
+        "whisper_model": "Systran/faster-whisper-small",
+        "whisper_language": "el",
+        "default_model": integrations.DEFAULT_WHISPER_MODEL,
+    }
+    assert resp.json() == {"ok": True, "message": "Voice settings saved.", "settings": expected}
+    # Saving the Ollama settings leaves the voice ones alone, and the other way round.
+    assert api.put("/api/settings/integrations/ai", json={"ai_timeout": 40}).status_code == 200
+    body = api.get("/api/settings/integrations").json()
+    assert body["whisper"] == expected and body["ai"]["ai_timeout"] == 40
+    conn = get_connection()
+    try:
+        assert integrations.whisper_for_user(conn, user_id("set-whisper")) == {
+            "url": "http://bazzite-server:8000",
+            "model": "Systran/faster-whisper-small",
+            "language": "el",
+        }
+    finally:
+        conn.close()
+
+
+@pytest.mark.parametrize(
+    "body,message",
+    [
+        ({"whisper_enabled": True}, "Whisper URL is required when voice messages are on"),
+        ({"whisper_url": "bazzite:8000"}, "Whisper URL must start with http:// or https://"),
+        ({"whisper_language": "Greek"}, "Language must be a code like el or en, or blank to let Whisper guess"),
+    ],
+)
+def test_whisper_settings_validation(client, body, message):
+    api = register_and_login(client, f"set-whisper-bad-{next(_users)}")
+    resp = api.put("/api/settings/integrations/whisper", json=body)
+    assert resp.status_code == 400
+    assert message in resp.text
+
+
+def test_whisper_test_uses_the_typed_settings(client, monkeypatch):
+    api = register_and_login(client, "set-whisper-test")
+    seen = {}
+
+    def fake(cfg, **kw):
+        seen.update(cfg)
+        return True, "Connected."
+
+    monkeypatch.setattr(integrations, "test_whisper_connection", fake)
+    resp = api.post("/api/settings/integrations/whisper/test", json={"whisper_url": "http://w:8000"})
+    assert resp.json() == {"ok": True, "message": "Connected."}
+    assert seen == {"url": "http://w:8000", "model": integrations.DEFAULT_WHISPER_MODEL, "language": ""}
