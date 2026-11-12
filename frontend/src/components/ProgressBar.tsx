@@ -39,7 +39,11 @@ export function ProgressBar({ value, max, status, label, showIcon = false, class
         className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
       >
         <div
-          className={cn('h-full rounded-full transition-[width] duration-500 ease-out', FILL[s])}
+          // Grows from 0 on mount, then glides to new values.
+          className={cn(
+            'h-full animate-progress-grow rounded-full transition-[width] duration-700 ease-out-quart',
+            FILL[s],
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>

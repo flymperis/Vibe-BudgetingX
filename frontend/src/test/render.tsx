@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router'
+import { MotionProvider } from '@/components/motion'
 
 export function renderWithProviders(
   ui: ReactElement,
@@ -17,7 +18,9 @@ export function renderWithProviders(
     router,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <MotionProvider>
+          <RouterProvider router={router} />
+        </MotionProvider>
       </QueryClientProvider>,
     ),
   }

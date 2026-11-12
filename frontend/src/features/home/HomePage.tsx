@@ -1,5 +1,6 @@
 import { ArrowLeftRight, Minus, PiggyBank, Plus, ReceiptText, Table2 } from 'lucide-react'
 import { LoadError } from '@/components/LoadError'
+import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQuickAdd } from '@/app/quick-add'
@@ -130,10 +131,13 @@ export default function HomePage() {
       {recent.isPending ? (
         <ListSkeleton rows={3} />
       ) : recentRows.length ? (
-        <ListGroup label={t('home.recentExpenses')}>
-          {recentRows.map((e) => (
-            <TxnRow key={e.id} entry={e} today={today} showDay onOpen={actions.open} />
-          ))}
+        // Keyed by month: switching months shows the new list without animating it.
+        <ListGroup key={month} label={t('home.recentExpenses')}>
+          <AnimatePresence initial={false}>
+            {recentRows.map((e) => (
+              <TxnRow key={e.id} entry={e} today={today} showDay onOpen={actions.open} enter />
+            ))}
+          </AnimatePresence>
         </ListGroup>
       ) : (
         <p className="mx-1 text-sm text-muted-foreground">

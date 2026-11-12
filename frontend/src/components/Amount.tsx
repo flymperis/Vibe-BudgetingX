@@ -46,8 +46,11 @@ export function AmountDisplay({
         className,
       )}
     >
-      {sign && value ? sign : null}
-      {displayAmountText(value)}
+      {/* Re-keyed on every change so the small "bump" keyframe plays again. */}
+      <span key={value} className={cn('inline-block', value && 'animate-amount-bump')}>
+        {sign && value ? sign : null}
+        {displayAmountText(value)}
+      </span>
       <span className="ml-1.5 font-medium text-muted-foreground">{currency}</span>
     </output>
   )
@@ -75,7 +78,7 @@ export function AmountKeypad({ value, onChange, className }: AmountValueProps & 
           }}
           className={cn(
             'grid h-12 place-items-center rounded-xl bg-muted text-xl font-medium select-none',
-            'transition-colors active:bg-border',
+            'transition-[background-color,scale] duration-120 ease-out active:scale-[.92] active:bg-border',
             'outline-none focus-visible:ring-2 focus-visible:ring-ring',
           )}
         >

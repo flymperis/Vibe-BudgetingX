@@ -192,6 +192,7 @@ export function EntrySheet({
       title={titleFor(t, kind, editing)}
       hideTitle={allowKindSwitch && !editing}
       className="data-[vaul-drawer-direction=bottom]:h-[92dvh]"
+      stagger={false}
       footerClassName="border-t pt-3"
       footer={
         <>
@@ -204,7 +205,7 @@ export function EntrySheet({
     >
       {kindSwitch}
       <form {...formAttrs} className="min-w-0 pt-1 pb-2">
-        <EntryFields {...formProps} />
+        <EntryFields {...formProps} className="sheet-stagger" />
       </form>
     </ResponsiveSheet>
   )

@@ -107,7 +107,7 @@ function TotalRow({ label, value, strong }: { label: string; value: number; stro
       )}
     >
       <span className={cn('text-sm', strong ? 'font-semibold' : 'text-muted-foreground')}>{label}</span>
-      <Money value={value} className={cn('text-[15px]', strong ? 'font-bold' : 'font-semibold')} />
+      <Money value={value} animate className={cn('text-[15px]', strong ? 'font-bold' : 'font-semibold')} />
     </li>
   )
 }
@@ -150,7 +150,7 @@ function AccountBalanceRow<A extends BalanceAccount>({
           </span>
         ) : null}
       </span>
-      <Money value={a.current_balance} className="shrink-0 text-[15px] font-semibold" />
+      <Money value={a.current_balance} animate className="shrink-0 text-[15px] font-semibold" />
     </>
   )
   const payLabel = t('accounts.payCardLabel', { name: a.name })

@@ -207,7 +207,8 @@ describe('EntrySheet on mobile', () => {
     vi.stubGlobal('getComputedStyle', (el: Element, pseudo?: string | null) => {
       const style = realStyle(el, pseudo)
       return new Proxy(style, {
-        get: (target, prop) => (prop === 'transform' ? target.transform || 'none' : Reflect.get(target, prop)),
+        get: (target, prop) =>
+          prop === 'transform' ? target.transform || 'none' : Reflect.get(target, prop),
       })
     })
   })

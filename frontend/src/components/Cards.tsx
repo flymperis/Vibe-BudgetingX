@@ -29,7 +29,7 @@ export function HeroCard({ label, amount, pills, children, className }: HeroCard
     <div className={cn('rounded-3xl bg-hero p-5 text-hero-foreground', className)}>
       <p className="text-[13px] opacity-80">{label}</p>
       <p className="mt-1 mb-4 text-[34px] leading-tight font-bold tracking-tight">
-        <Money value={amount} tone="none" />
+        <Money value={amount} tone="none" animate />
       </p>
       {pills?.length ? (
         <div className="flex gap-2.5">
@@ -37,7 +37,7 @@ export function HeroCard({ label, amount, pills, children, className }: HeroCard
             <div key={p.label} className="min-w-0 flex-1 rounded-xl bg-white/15 px-3 py-2.5">
               <p className="truncate text-[11px] opacity-80">{p.label}</p>
               <p className="truncate text-[15px] font-semibold">
-                <Money value={p.value} signed={p.signed} tone="none" />
+                <Money value={p.value} signed={p.signed} tone="none" animate />
               </p>
             </div>
           ))}
