@@ -30,3 +30,9 @@ if (!('ResizeObserver' in window)) {
   ;(window as unknown as { ResizeObserver: typeof RO }).ResizeObserver = RO
 }
 Element.prototype.scrollIntoView ??= function () {}
+// vaul (mobile drawer) captures the pointer while dragging.
+Element.prototype.setPointerCapture ??= function () {}
+Element.prototype.releasePointerCapture ??= function () {}
+Element.prototype.hasPointerCapture ??= function () {
+  return false
+}

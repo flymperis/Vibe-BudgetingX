@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { setCsrfToken } from '@/api/client'
@@ -190,5 +190,85 @@ describe('EntrySheet', () => {
     await user.type(notes, 'ταξί #λον')
     await user.click(screen.getByRole('button', { name: '#Λονδίνο2026' }))
     expect(notes).toHaveValue('ταξί #Λονδίνο2026 ')
+  })
+})
+
+describe('EntrySheet on mobile', () => {
+  beforeEach(() => {
+    // Phone: bottom drawer with amount display + keypad.
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    // vaul reads the drawer's transform on pointer up; jsdom leaves it empty.
+    const realStyle = window.getComputedStyle.bind(window)
+    vi.stubGlobal('getComputedStyle', (el: Element, pseudo?: string | null) => {
+      const style = realStyle(el, pseudo)
+      return new Proxy(style, {
+        get: (target, prop) => (prop === 'transform' ? target.transform || 'none' : Reflect.get(target, prop)),
+      })
+    })
+  })
+
+  it('pins the amount, keypad and save below the scrolling fields', () => {
+    setup(<EntrySheet open onOpenChange={() => {}} allowKindSwitch />)
+    const amount = screen.getByRole('status', { name: 'Ποσό' })
+    const keypad = screen.getByRole('group', { name: 'Πληκτρολόγιο ποσού' })
+    const saveButton = screen.getByRole('button', { name: 'Αποθήκευση' })
+    const footer = amount.closest('[data-slot="drawer-footer"]')
+    expect(footer).not.toBeNull()
+    expect(footer).toContainElement(keypad)
+    expect(footer).toContainElement(saveButton)
+    // Amount sits directly above the keypad; the fields are not in the pinned part.
+    expect(amount.compareDocumentPosition(keypad) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const category = screen.getByRole('radio', { name: 'Καφές' })
+    expect(footer).not.toContainElement(category)
+    expect(footer).not.toContainElement(screen.getByRole('radio', { name: 'Νέο έσοδο' }))
+  })
+
+  it('adds an expense with the keypad and shows what is typed', async () => {
+    fetchMock.mockResolvedValue(json(200, saved))
+    const onOpenChange = vi.fn()
+    const { user } = setup(<EntrySheet open onOpenChange={onOpenChange} allowKindSwitch />)
+    const keypad = screen.getByRole('group', { name: 'Πληκτρολόγιο ποσού' })
+    for (const key of ['1', '2']) await user.click(within(keypad).getByRole('button', { name: key }))
+    await user.click(within(keypad).getByRole('button', { name: 'Υποδιαστολή' }))
+    await user.click(within(keypad).getByRole('button', { name: '5' }))
+    expect(screen.getByRole('status', { name: 'Ποσό' })).toHaveTextContent('-12,5')
+    await user.click(screen.getByRole('radio', { name: 'Καφές' }))
+    await user.click(screen.getByRole('button', { name: 'Αποθήκευση' }))
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+    expect(bodyOf(fetchMock.mock.calls[0])).toMatchObject({ amount: -12.5, category_id: 7, account_id: 3 })
+  })
+
+  it('shows validation errors in the pinned part and keeps refund + edit working', async () => {
+    fetchMock.mockResolvedValue(json(200, saved))
+    const entry: Entry = {
+      kind: 'expense',
+      id: 42,
+      amount: -30,
+      date: '2026-10-02',
+      notes: '',
+      category_id: 8,
+      category_name: 'Σούπερ μάρκετ',
+      account_id: 4,
+      account_name: 'Μετρητά',
+    }
+    const { user, unmount } = setup(<EntrySheet open onOpenChange={() => {}} />)
+    await user.click(screen.getByRole('button', { name: 'Αποθήκευση' }))
+    const alert = screen.getByRole('alert')
+    expect(alert).toHaveTextContent('Γράψε ποσό')
+    expect(alert.closest('[data-slot="drawer-footer"]')).not.toBeNull()
+    unmount()
+
+    setup(<EntrySheet open onOpenChange={() => {}} entry={entry} />)
+    expect(screen.getByRole('status', { name: 'Ποσό' })).toHaveTextContent('-30')
+    await user.click(screen.getByRole('button', { name: /Πρόσημο: έξοδο/ }))
+    await user.click(screen.getByRole('button', { name: 'Αποθήκευση' }))
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    expect(String(fetchMock.mock.calls[0][0])).toBe('/api/expenses/42')
+    expect(bodyOf(fetchMock.mock.calls[0]).amount).toBe(30)
   })
 })

@@ -42,6 +42,8 @@ export interface ResponsiveSheetProps {
   children: ReactNode
   /** Sticky actions at the bottom (save / delete). */
   footer?: ReactNode
+  /** Extra classes for the footer on mobile (e.g. a divider when it holds more than buttons). */
+  footerClassName?: string
   /** Dialog width on desktop. */
   size?: 'sm' | 'md' | 'lg'
   className?: string
@@ -57,6 +59,7 @@ export function ResponsiveSheet({
   description,
   children,
   footer,
+  footerClassName,
   size = 'md',
   className,
 }: ResponsiveSheetProps) {
@@ -102,7 +105,7 @@ export function ResponsiveSheet({
           {description ? <DrawerDescription>{description}</DrawerDescription> : null}
         </DrawerHeader>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[18px] pb-2">{children}</div>
-        {footer ? <DrawerFooter className="gap-2 px-[18px] pt-2 pb-4">{footer}</DrawerFooter> : null}
+        {footer ? <DrawerFooter className={cn('gap-2 px-[18px] pt-2 pb-4', footerClassName)}>{footer}</DrawerFooter> : null}
       </DrawerContent>
     </Drawer>
   )
