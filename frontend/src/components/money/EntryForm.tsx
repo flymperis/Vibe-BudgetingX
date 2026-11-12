@@ -29,6 +29,7 @@ export interface EntryFormProps {
   /** Field the last save attempt complained about (marks it). */
   invalid?: DraftError | null
   autoFocusAmount?: boolean
+  className?: string
 }
 
 /** Amount with the expense / refund sign toggle: text input on desktop, display on mobile. */
@@ -92,7 +93,7 @@ export function EntryAmount({ kind, draft, onChange, invalid, autoFocusAmount }:
 }
 
 /** Category, account, day and notes. */
-export function EntryFields({ kind, draft, onChange, invalid }: EntryFormProps) {
+export function EntryFields({ kind, draft, onChange, invalid, className }: EntryFormProps) {
   const t = useT()
   const boot = useBootstrap()
   const today = useToday()
@@ -102,7 +103,7 @@ export function EntryFields({ kind, draft, onChange, invalid }: EntryFormProps) 
   const isExpense = kind === 'expense'
 
   return (
-    <div>
+    <div className={className}>
       <FieldLabel id={ids.cat} className={cn(invalid === 'category' && 'text-negative')}>
         {t('common.category')}
       </FieldLabel>

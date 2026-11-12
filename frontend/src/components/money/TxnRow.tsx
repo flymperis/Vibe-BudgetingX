@@ -1,4 +1,5 @@
 import { use } from 'react'
+import { m } from 'motion/react'
 import { BootstrapContext } from '@/bootstrap/bootstrap'
 import { AccountAvatar } from '@/components/AccountAvatar'
 import { CategoryIcon } from '@/components/CategoryIcon'
@@ -7,6 +8,7 @@ import { TagText } from '@/components/TagText'
 import { useLang, useT } from '@/i18n'
 import { relativeDayLabel } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
+import { listItemMotion } from '@/lib/motion'
 import type { Entry } from './entries'
 
 /**
@@ -19,12 +21,18 @@ export function TxnRow({
   today,
   showDay = false,
   onOpen,
+  enter = false,
 }: {
   entry: Entry
   today: string
   /** Put the day in the subtitle (lists not grouped by day). */
   showDay?: boolean
   onOpen: (entry: Entry) => void
+  /**
+   * Inside <AnimatePresence>: drop in from above when mounted after the list
+   * (a new entry). Removal always slides out when there is a presence parent.
+   */
+  enter?: boolean
 }) {
   const t = useT()
   const lang = useLang()
@@ -34,7 +42,7 @@ export function TxnRow({
   const before = entry.notes ? `${entry.category_name} · ` : ''
   const after = showDay ? ` · ${day}` : ''
   return (
-    <li className="relative">
+    <m.li className="relative overflow-hidden" {...listItemMotion(enter)}>
       <button
         type="button"
         onClick={() => onOpen(entry)}
@@ -69,6 +77,6 @@ export function TxnRow({
         </span>
         <Money value={entry.amount} tone="positive" className="text-[15px] font-semibold" />
       </div>
-    </li>
+    </m.li>
   )
 }

@@ -15,6 +15,43 @@
  */
 @custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
 
+/*
+ * Motion tokens: `ease-out-expo`, `ease-out-quart`, `duration-{overlay,enter,exit,pop,page}`
+ * and `animate-*` utilities. Also read directly by the CSS further down.
+ */
+@theme static {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-duration-overlay: 240ms;
+  --transition-duration-enter: 240ms;
+  --transition-duration-exit: 150ms;
+  --transition-duration-pop: 200ms;
+  --transition-duration-page: 240ms;
+
+  --animate-amount-bump: amount-bump 180ms var(--ease-out-quart);
+  --animate-progress-grow: progress-grow 700ms var(--ease-out-quart);
+  --animate-rise-in: rise-in 260ms var(--ease-out-expo) both;
+}
+
+/* Plain keyframes (always emitted; the stagger rule uses rise-in without a utility). */
+@keyframes amount-bump {
+  40% {
+    scale: 1.06;
+  }
+}
+/* From 0 to the bar's own inline width. */
+@keyframes progress-grow {
+  from {
+    width: 0;
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
 @theme inline {
   --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: var(--font-sans);
@@ -253,6 +290,105 @@
   }
   .amount-zero {
     color: var(--muted-foreground);
+  }
+}
+
+/*
+ * Staggered entrance of the form fields in a mobile bottom sheet: each direct
+ * child of .sheet-stagger fades in and rises 10px, 40ms after the previous
+ * one (first five; the rest come with the fifth). Only children animate, so
+ * vaul's drag transform on the sheet itself is untouched.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-stagger > * {
+    animation: var(--animate-rise-in);
+    animation-delay: 160ms;
+  }
+  .sheet-stagger > :nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .sheet-stagger > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .sheet-stagger > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .sheet-stagger > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+}
+
+/*
+ * Page changes (React Router `viewTransition` links). The navigation chrome
+ * keeps its own name so it stays put while the page underneath moves.
+ * <html data-nav-dir="forward|back"> picks the slide direction (see
+ * src/lib/view-transition.ts); without it the page only fades.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: vt-fade-out var(--transition-duration-exit) ease-out both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-fade-in var(--transition-duration-page) var(--ease-out-expo) both;
+  }
+  [data-nav-dir='forward']::view-transition-old(root) {
+    animation-name: vt-out-left;
+  }
+  [data-nav-dir='forward']::view-transition-new(root) {
+    animation-name: vt-in-right;
+  }
+  [data-nav-dir='back']::view-transition-old(root) {
+    animation-name: vt-out-right;
+  }
+  [data-nav-dir='back']::view-transition-new(root) {
+    animation-name: vt-in-left;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+.vt-tabbar {
+  view-transition-name: app-tabbar;
+}
+.vt-sidebar {
+  view-transition-name: app-sidebar;
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in-right {
+  from {
+    opacity: 0;
+    translate: 18px 0;
+  }
+}
+@keyframes vt-in-left {
+  from {
+    opacity: 0;
+    translate: -18px 0;
+  }
+}
+@keyframes vt-out-left {
+  to {
+    opacity: 0;
+    translate: -18px 0;
+  }
+}
+@keyframes vt-out-right {
+  to {
+    opacity: 0;
+    translate: 18px 0;
   }
 }
 

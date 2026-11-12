@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
+import { MotionGlobalConfig } from 'motion/react'
 import { afterEach } from 'vitest'
+
+// Animations finish instantly in tests: removed list rows leave the DOM at once
+// and nothing depends on timers or animation frames.
+MotionGlobalConfig.skipAnimations = true
 
 afterEach(() => {
   cleanup()

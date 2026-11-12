@@ -205,7 +205,7 @@ function BudgetOn({
           >
             <div
               className={cn(
-                'h-full rounded-full transition-[width] duration-500',
+                'h-full animate-progress-grow rounded-full transition-[width] duration-700 ease-out-quart',
                 status === 'over' ? 'bg-negative' : status === 'warn' ? 'bg-warning' : 'bg-hero-foreground',
               )}
               style={{ width: `${clampPct(summary.total_pct)}%` }}

@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router'
 import { setUnauthorizedHandler } from '@/api/client'
 import { markLoggedOut, registerCsrfLoader } from '@/auth/session'
 import { ConfirmProvider } from '@/components/ConfirmProvider'
+import { MotionProvider } from '@/components/motion'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { installSheetHistory } from '@/hooks/useBackToClose'
@@ -32,17 +33,19 @@ export function App() {
   const isDesktop = useIsDesktop()
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider delayDuration={300}>
-        <ConfirmProvider>
-          <RouterProvider router={router} />
-        </ConfirmProvider>
-        <Toaster
-          position={isDesktop ? 'bottom-right' : 'top-center'}
-          offset={isDesktop ? 24 : { top: 'calc(env(safe-area-inset-top) + 12px)' }}
-          mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 12px)' }}
-          duration={2500}
-        />
-      </TooltipProvider>
+      <MotionProvider>
+        <TooltipProvider delayDuration={300}>
+          <ConfirmProvider>
+            <RouterProvider router={router} />
+          </ConfirmProvider>
+          <Toaster
+            position={isDesktop ? 'bottom-right' : 'top-center'}
+            offset={isDesktop ? 24 : { top: 'calc(env(safe-area-inset-top) + 12px)' }}
+            mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 12px)' }}
+            duration={2500}
+          />
+        </TooltipProvider>
+      </MotionProvider>
     </QueryClientProvider>
   )
 }

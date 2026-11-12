@@ -46,6 +46,12 @@ export interface ResponsiveSheetProps {
   footerClassName?: string
   /** Dialog width on desktop. */
   size?: 'sm' | 'md' | 'lg'
+  /**
+   * Mobile: fade the body's direct children in one after another as the sheet
+   * opens (CSS `.sheet-stagger`, off with reduced motion). Turn it off when the
+   * body is a single wrapper and stagger its fields yourself instead.
+   */
+  stagger?: boolean
   className?: string
 }
 
@@ -61,6 +67,7 @@ export function ResponsiveSheet({
   footer,
   footerClassName,
   size = 'md',
+  stagger = true,
   className,
 }: ResponsiveSheetProps) {
   const isDesktop = useIsDesktop()
@@ -104,8 +111,17 @@ export function ResponsiveSheet({
           <DrawerTitle className="text-[19px] font-semibold">{title}</DrawerTitle>
           {description ? <DrawerDescription>{description}</DrawerDescription> : null}
         </DrawerHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[18px] pb-2">{children}</div>
-        {footer ? <DrawerFooter className={cn('gap-2 px-[18px] pt-2 pb-4', footerClassName)}>{footer}</DrawerFooter> : null}
+        <div
+          className={cn(
+            'min-h-0 flex-1 overflow-y-auto overscroll-contain px-[18px] pb-2',
+            stagger && 'sheet-stagger',
+          )}
+        >
+          {children}
+        </div>
+        {footer ? (
+          <DrawerFooter className={cn('gap-2 px-[18px] pt-2 pb-4', footerClassName)}>{footer}</DrawerFooter>
+        ) : null}
       </DrawerContent>
     </Drawer>
   )

@@ -1,5 +1,6 @@
 import { Loader2, PiggyBank, Plus, ReceiptText } from 'lucide-react'
 import { AddButton } from '@/components/AddButton'
+import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useId, useRef } from 'react'
 import { useSearchParams } from 'react-router'
 import { useQuickAdd } from '@/app/quick-add'
@@ -8,6 +9,7 @@ import { CategoryGlyph } from '@/components/CategoryIcon'
 import { ChipPicker } from '@/components/ChipPicker'
 import { EmptyState } from '@/components/EmptyState'
 import { ListGroup } from '@/components/ListGroup'
+import { listItemMotion } from '@/lib/motion'
 import { MonthSwitcher } from '@/components/MonthSwitcher'
 import { PageHeader } from '@/components/PageHeader'
 import { ListSkeleton } from '@/components/skeletons'
@@ -61,6 +63,11 @@ export function EntryListScreen({ kind }: { kind: EntryKind }) {
   const rows = flattenPages(list.data)
   const total = list.data?.pages[0]?.total ?? 0
   const groups = groupByDay(rows)
+  // Only rows of the first page may animate in: a new entry lands there, while
+  // "load more" appends later pages, which should just appear.
+  const firstPage = new Set(list.data?.pages[0]?.items.map((e) => e.id))
+  // A different filter is a different list: remount it so nothing animates.
+  const listKey = `${kind}|${allMonths ? 'all' : month}|${categoryId ?? ''}`
 
   // Endless scrolling: load the next page when the sentinel comes into view.
   const sentinel = useRef<HTMLDivElement>(null)
@@ -177,16 +184,29 @@ export function EntryListScreen({ kind }: { kind: EntryKind }) {
           <p className="mx-1 mb-3 text-xs text-muted-foreground" aria-live="polite">
             {total === 1 ? t('money.countOne') : t('money.count', { count: total })}
           </p>
-          <div className="space-y-5">
-            {groups.map((g) => (
-              <ListGroup key={g.day} header={relativeDayLabel(g.day, lang, today)}>
-                {g.entries.map((e) => (
-                  <TxnRow key={e.id} entry={e} today={today} onOpen={actions.open} />
-                ))}
-              </ListGroup>
-            ))}
+          <div key={listKey} className="flex flex-col">
+            <AnimatePresence initial={false}>
+              {groups.map((g) => (
+                // pb instead of space-y: a collapsing group then takes its gap with it.
+                <m.div key={g.day} className="pb-5" {...listItemMotion(firstPage.has(g.entries[0].id))}>
+                  <ListGroup header={relativeDayLabel(g.day, lang, today)}>
+                    <AnimatePresence initial={false}>
+                      {g.entries.map((e) => (
+                        <TxnRow
+                          key={e.id}
+                          entry={e}
+                          today={today}
+                          onOpen={actions.open}
+                          enter={firstPage.has(e.id)}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </ListGroup>
+                </m.div>
+              ))}
+            </AnimatePresence>
           </div>
-          <div ref={sentinel} className="mt-5 flex flex-col items-center gap-2 text-xs text-muted-foreground">
+          <div ref={sentinel} className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
             {rows.length < total ? <span>{t('money.showing', { shown: rows.length, total })}</span> : null}
             {hasNextPage ? (
               <Button
