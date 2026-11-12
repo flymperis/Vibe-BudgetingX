@@ -816,6 +816,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings/integrations/whisper": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Whisper */
+        put: operations["save_whisper_api_settings_integrations_whisper_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/whisper/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Whisper
+         * @description Tests the settings as typed (not saved), even while voice is switched off.
+         */
+        post: operations["test_whisper_api_settings_integrations_whisper_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/telegram/server": {
         parameters: {
             query?: never;
@@ -2332,6 +2369,7 @@ export interface components {
         /** IntegrationsOut */
         IntegrationsOut: {
             ai: components["schemas"]["AiSettings"];
+            whisper: components["schemas"]["WhisperSettings"];
             telegram: components["schemas"]["TelegramStatus"];
         };
         /** InvestmentsOut */
@@ -3271,6 +3309,44 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * WhisperSettings
+         * @description Voice messages to the Telegram bot: a Whisper server with an OpenAI-style API.
+         */
+        WhisperSettings: {
+            /** Whisper Enabled */
+            whisper_enabled: boolean;
+            /** Whisper Url */
+            whisper_url: string;
+            /** Whisper Model */
+            whisper_model: string;
+            /** Whisper Language */
+            whisper_language: string;
+            /** Default Model */
+            default_model: string;
+        };
+        /** WhisperSettingsIn */
+        WhisperSettingsIn: {
+            /** Whisper Enabled */
+            whisper_enabled?: boolean | string | null;
+            /** Whisper Url */
+            whisper_url?: string | null;
+            /** Whisper Model */
+            whisper_model?: string | null;
+            /** Whisper Language */
+            whisper_language?: string | null;
+        };
+        /** WhisperSettingsSaved */
+        WhisperSettingsSaved: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Message */
+            message: string;
+            settings: components["schemas"]["WhisperSettings"];
         };
         /** YearlyOut */
         YearlyOut: {
@@ -5160,6 +5236,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_whisper_api_settings_integrations_whisper_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhisperSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhisperSettingsSaved"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_whisper_api_settings_integrations_whisper_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhisperSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkOut"];
                 };
             };
             /** @description Validation Error */

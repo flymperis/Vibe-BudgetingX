@@ -165,10 +165,25 @@ test('integrations and export screens load; test buttons answer inline', async (
   await page.goto('/settings/integrations')
   await expect(page.getByRole('heading', { name: 'Τοπικό AI (Ollama)' })).toBeVisible()
   await page.getByLabel('Διεύθυνση (Base URL)').fill('http://127.0.0.1:9')
-  await page.getByRole('button', { name: 'Δοκιμή σύνδεσης' }).click()
+  // The Ollama card comes first; the voice (Whisper) card has its own test button.
+  await page.getByRole('button', { name: 'Δοκιμή σύνδεσης' }).first().click()
   await expect(page.getByRole('status').filter({ hasText: /./ }).first()).toBeVisible()
   await page.getByRole('button', { name: 'Φόρτωση μοντέλων' }).click()
-  await expect(page.getByText(/Could not reach Ollama|Connection failed|Ollama responded/)).toBeVisible()
+  await expect(
+    page.getByText(/Could not reach Ollama|Connection failed|Ollama responded/).first(),
+  ).toBeVisible()
+
+  await expect(page.getByRole('heading', { name: 'Φωνητικά μηνύματα (Whisper)' })).toBeVisible()
+  await page.getByLabel('Ενεργοποίηση φωνητικών').click()
+  await page.getByRole('button', { name: 'Αποθήκευση' }).nth(1).click()
+  await expect(
+    page.getByText('Γράψε τη διεύθυνση του Whisper για να ενεργοποιηθούν τα φωνητικά.'),
+  ).toBeVisible()
+  await page.getByLabel('Διεύθυνση του Whisper').fill('http://127.0.0.1:9')
+  await page.getByRole('button', { name: 'Δοκιμή σύνδεσης' }).nth(1).click()
+  await expect(
+    page.getByText(/Could not reach Whisper|Connection failed|Whisper responded/).first(),
+  ).toBeVisible()
   await expect(page.getByText('Αποθήκευσε πρώτα το token του bot'))
     .toBeVisible()
     .catch(() => {

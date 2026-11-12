@@ -141,6 +141,23 @@ export function useTestAi() {
   })
 }
 
+export type WhisperSettingsIn = Schema<'WhisperSettingsIn'>
+
+export const useSaveWhisper = () =>
+  useIntegrationMutation(
+    (body: WhisperSettingsIn) =>
+      api.put<Schema<'WhisperSettingsSaved'>>('/settings/integrations/whisper', body),
+    () => translate('common.saved'),
+  )
+
+/** Tests the typed Whisper settings (server up, model downloaded); nothing is saved. */
+export function useTestWhisper() {
+  return useMutation({
+    mutationFn: (body: WhisperSettingsIn) => api.post<OkResult>('/settings/integrations/whisper/test', body),
+    meta: { toastErrors: false },
+  })
+}
+
 /** "Load models": GET models for the typed base URL. */
 export function useLoadModels() {
   return useMutation({

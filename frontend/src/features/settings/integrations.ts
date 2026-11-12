@@ -43,6 +43,44 @@ export function validateAi(f: AiForm): MessageKey | null {
   return null
 }
 
+export type WhisperSettings = Schema<'WhisperSettings'>
+
+export interface WhisperForm {
+  enabled: boolean
+  url: string
+  model: string
+  language: string
+}
+
+export function whisperFormFromSettings(s: WhisperSettings): WhisperForm {
+  return {
+    enabled: s.whisper_enabled,
+    url: s.whisper_url ?? '',
+    model: s.whisper_model ?? '',
+    language: s.whisper_language ?? '',
+  }
+}
+
+/** Body for PUT /settings/integrations/whisper and POST .../whisper/test. */
+export function buildWhisperBody(f: WhisperForm): Schema<'WhisperSettingsIn'> {
+  return {
+    whisper_enabled: f.enabled,
+    whisper_url: f.url.trim(),
+    whisper_model: f.model.trim(),
+    whisper_language: f.language.trim().toLowerCase(),
+  }
+}
+
+/** Same rules as the server, so the message shows before the round trip. */
+export function validateWhisper(f: WhisperForm): MessageKey | null {
+  const url = f.url.trim()
+  if (f.enabled && !url) return 'settings.errWhisperUrl'
+  if (url && !/^https?:\/\//i.test(url)) return 'settings.errWhisperUrlScheme'
+  const lang = f.language.trim().toLowerCase()
+  if (lang && !/^[a-z]{2,3}$/.test(lang)) return 'settings.errWhisperLanguage'
+  return null
+}
+
 export interface NotifyForm {
   kinds: Record<string, boolean>
   cardDays: string

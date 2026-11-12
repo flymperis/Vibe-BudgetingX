@@ -37,6 +37,29 @@ class AiSettingsSaved(BaseModel):
     settings: AiSettings
 
 
+class WhisperSettings(BaseModel):
+    """Voice messages to the Telegram bot: a Whisper server with an OpenAI-style API."""
+
+    whisper_enabled: bool
+    whisper_url: str
+    whisper_model: str  # blank = the default model
+    whisper_language: str  # e.g. "el"; blank lets Whisper guess
+    default_model: str
+
+
+class WhisperSettingsIn(BaseModel):
+    whisper_enabled: bool | str | None = None
+    whisper_url: str | None = None
+    whisper_model: str | None = None
+    whisper_language: str | None = None
+
+
+class WhisperSettingsSaved(BaseModel):
+    ok: bool = True
+    message: str
+    settings: WhisperSettings
+
+
 class ModelsOut(BaseModel):
     models: list[str]
 
@@ -125,4 +148,5 @@ class TelegramStatus(BaseModel):
 
 class IntegrationsOut(BaseModel):
     ai: AiSettings
+    whisper: WhisperSettings
     telegram: TelegramStatus
