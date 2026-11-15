@@ -615,6 +615,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Start
+         * @description Every account with its recorded balance at the end of `date` (default today).
+         */
+        get: operations["start_api_reconciliation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reconciliation/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_reconciliation_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reconciliation/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply */
+        post: operations["apply_api_reconciliation_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recurring": {
         parameters: {
             query?: never;
@@ -2585,6 +2639,124 @@ export interface components {
             total: number;
             /** Avg */
             avg: number | null;
+        };
+        /** ReconcileAccountOut */
+        ReconcileAccountOut: {
+            /** Account Id */
+            account_id: number;
+            /** Name */
+            name: string;
+            /** Is Credit Card */
+            is_credit_card: boolean;
+            /** System Balance */
+            system_balance: number;
+            /** Actual Balance */
+            actual_balance: number;
+            /** Difference */
+            difference: number;
+        };
+        /**
+         * ReconcileAdjustmentOut
+         * @description What is left after the transfers, booked to the "Other" category.
+         */
+        ReconcileAdjustmentOut: {
+            /** Account Id */
+            account_id: number;
+            /** Account Name */
+            account_name: string;
+            /** Kind */
+            kind: string;
+            /** Amount */
+            amount: number;
+            /** Category Name */
+            category_name: string;
+        };
+        /** ReconcileAppliedOut */
+        ReconcileAppliedOut: {
+            /** Date */
+            date: string;
+            /** Accounts */
+            accounts: components["schemas"]["ReconcileAccountOut"][];
+            /** Transfers */
+            transfers: components["schemas"]["ReconcileTransferOut"][];
+            /** Adjustments */
+            adjustments: components["schemas"]["ReconcileAdjustmentOut"][];
+            /** Notes */
+            notes: string;
+            /** Transfer Notes */
+            transfer_notes: string;
+            /** Message */
+            message: string;
+        };
+        /** ReconcileBalanceIn */
+        ReconcileBalanceIn: {
+            /** Account Id */
+            account_id: number;
+            /** Actual Balance */
+            actual_balance: number;
+        };
+        /**
+         * ReconcileIn
+         * @description Accounts left out are not touched. A blank date is today.
+         */
+        ReconcileIn: {
+            /**
+             * Date
+             * @default
+             */
+            date: string | null;
+            /** Balances */
+            balances: components["schemas"]["ReconcileBalanceIn"][];
+        };
+        /** ReconcilePlanOut */
+        ReconcilePlanOut: {
+            /** Date */
+            date: string;
+            /** Accounts */
+            accounts: components["schemas"]["ReconcileAccountOut"][];
+            /** Transfers */
+            transfers: components["schemas"]["ReconcileTransferOut"][];
+            /** Adjustments */
+            adjustments: components["schemas"]["ReconcileAdjustmentOut"][];
+            /** Notes */
+            notes: string;
+            /** Transfer Notes */
+            transfer_notes: string;
+        };
+        /** ReconcileStartAccount */
+        ReconcileStartAccount: {
+            /** Account Id */
+            account_id: number;
+            /** Name */
+            name: string;
+            /** Is Credit Card */
+            is_credit_card: boolean;
+            bank?: components["schemas"]["BankBadge"] | null;
+            /** System Balance */
+            system_balance: number;
+        };
+        /**
+         * ReconcileStartOut
+         * @description GET /reconciliation: every account with its recorded balance on a day.
+         */
+        ReconcileStartOut: {
+            /** Date */
+            date: string;
+            /** Accounts */
+            accounts: components["schemas"]["ReconcileStartAccount"][];
+        };
+        /** ReconcileTransferOut */
+        ReconcileTransferOut: {
+            /** From Account Id */
+            from_account_id: number;
+            /** From Account Name */
+            from_account_name: string;
+            /** To Account Id */
+            to_account_id: number;
+            /** To Account Name */
+            to_account_name: string;
+            /** Amount */
+            amount: number;
         };
         /** RecordExpenseIn */
         RecordExpenseIn: {
@@ -4844,6 +5016,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_api_reconciliation_get: {
+        parameters: {
+            query?: {
+                date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconcileStartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_reconciliation_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconcilePlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_api_reconciliation_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconcileAppliedOut"];
                 };
             };
             /** @description Validation Error */

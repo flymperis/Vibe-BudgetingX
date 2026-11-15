@@ -3,6 +3,7 @@ import { moneyEn } from './features/money'
 import { manageEn } from './features/manage'
 import { planningEn } from './features/planning'
 import { sharedEn } from './features/shared'
+import { reconciliationEn } from './features/reconciliation'
 import { insightsEn } from './features/insights'
 
 export const en: Record<MessageKey, string> = {
@@ -13,6 +14,7 @@ export const en: Record<MessageKey, string> = {
   'nav.income': 'Income',
   'nav.recurring': 'Recurring',
   'nav.transfers': 'Transfers',
+  'nav.reconciliation': 'Month end reconciliation',
   'nav.budget': 'Budget',
   'nav.shared': 'Shared expenses',
   'nav.reports': 'Reports',
@@ -158,6 +160,7 @@ export const en: Record<MessageKey, string> = {
   'more.recurringHint': 'Regular bills and income',
   'more.sharedHint': 'Bills with friends',
   'more.transfersHint': 'Between your accounts',
+  'more.reconciliationHint': 'Match your real balances',
 
   'quickAdd.newExpense': 'New expense',
   'quickAdd.notesPlaceholder': 'e.g. coffee #London2026',
@@ -170,4 +173,5 @@ export const en: Record<MessageKey, string> = {
   ...planningEn,
   ...sharedEn,
   ...insightsEn,
+  ...reconciliationEn,
 }

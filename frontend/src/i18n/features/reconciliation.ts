@@ -1,0 +1,61 @@
+/** Strings of the month end reconciliation screen. Keys must exist in both objects (the compiler checks). */
+export const reconciliationEl = {
+  'reconcile.intro':
+    'Γράψε τα πραγματικά υπόλοιπα των λογαριασμών και των καρτών σου. Η εφαρμογή κάνει μεταφορές ώστε να ταιριάξει το καθένα, και ό,τι διαφορά περισσέψει μπαίνει στην κατηγορία Other με περιγραφή «balancing input».',
+  'reconcile.date': 'Υπόλοιπα στο τέλος της',
+  'reconcile.accounts': 'Λογαριασμοί',
+  'reconcile.cards': 'Κάρτες',
+  'reconcile.recorded': 'Στην εφαρμογή: {amount}',
+  'reconcile.recordedOwed': 'Οφειλή στην εφαρμογή: {amount}',
+  'reconcile.actualLabel': 'Πραγματικό υπόλοιπο {name}',
+  'reconcile.owedLabel': 'Πραγματική οφειλή {name}',
+  'reconcile.useRecorded': 'Ίδιο με την εφαρμογή',
+  'reconcile.blankHint':
+    'Κάτω από κάθε όνομα φαίνεται το υπόλοιπο στην εφαρμογή (στις κάρτες η οφειλή). Όσα μείνουν κενά δεν αλλάζουν.',
+  'reconcile.invalid': 'Κάποια υπόλοιπα δεν είναι αριθμοί.',
+  'reconcile.preview': 'Προεπισκόπηση',
+  'reconcile.previewTitle': 'Τι θα γίνει',
+  'reconcile.differences': 'Διαφορές',
+  'reconcile.transfers': 'Μεταφορές',
+  'reconcile.adjustments': 'Balancing input (Other)',
+  'reconcile.expenseOn': 'Έξοδο από {name}',
+  'reconcile.incomeOn': 'Έσοδο σε {name}',
+  'reconcile.allMatch': 'Όλα συμφωνούν, δεν χρειάζεται τίποτα.',
+  'reconcile.apply': 'Εφαρμογή',
+  'reconcile.confirmTitle': 'Να γίνει η συμφωνία;',
+  'reconcile.confirmBody':
+    '{transfers} μεταφορές και {adjustments} εγγραφές balancing input με ημερομηνία {date}.',
+  'reconcile.applied': 'Η συμφωνία ολοκληρώθηκε.',
+  'reconcile.nothingToDo': 'Όλα συμφωνούσαν ήδη.',
+  'reconcile.empty': 'Δεν έχεις λογαριασμούς ακόμα.',
+} as const
+
+export const reconciliationEn: Record<keyof typeof reconciliationEl, string> = {
+  'reconcile.intro':
+    'Type the real balances of your accounts and cards. The app adds transfers so each one matches, and any difference left over is booked to the Other category as "balancing input".',
+  'reconcile.date': 'Balances at the end of',
+  'reconcile.accounts': 'Accounts',
+  'reconcile.cards': 'Cards',
+  'reconcile.recorded': 'In the app: {amount}',
+  'reconcile.recordedOwed': 'Owed in the app: {amount}',
+  'reconcile.actualLabel': 'Real balance of {name}',
+  'reconcile.owedLabel': 'Real amount owed on {name}',
+  'reconcile.useRecorded': 'Same as the app',
+  'reconcile.blankHint':
+    'Under each name is the balance in the app (for cards, the amount owed). Rows left blank are not changed.',
+  'reconcile.invalid': 'Some balances are not numbers.',
+  'reconcile.preview': 'Preview',
+  'reconcile.previewTitle': 'What will happen',
+  'reconcile.differences': 'Differences',
+  'reconcile.transfers': 'Transfers',
+  'reconcile.adjustments': 'Balancing input (Other)',
+  'reconcile.expenseOn': 'Expense from {name}',
+  'reconcile.incomeOn': 'Income into {name}',
+  'reconcile.allMatch': 'Everything matches, nothing to do.',
+  'reconcile.apply': 'Apply',
+  'reconcile.confirmTitle': 'Reconcile now?',
+  'reconcile.confirmBody': '{transfers} transfers and {adjustments} balancing input entries dated {date}.',
+  'reconcile.applied': 'Balances reconciled.',
+  'reconcile.nothingToDo': 'Everything already matched.',
+  'reconcile.empty': 'You have no accounts yet.',
+}
