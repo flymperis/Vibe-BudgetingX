@@ -49,6 +49,7 @@ export const MONEY_DOMAINS = [
   'income',
   'recurring',
   'transfers',
+  'reconciliation', // recorded balances on the month end reconciliation screen
   'budget',
   'shared',
   'reports',

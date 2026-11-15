@@ -8,6 +8,7 @@ import { manageEl } from './features/manage'
 import { planningEl } from './features/planning'
 import { sharedEl } from './features/shared'
 import { insightsEl } from './features/insights'
+import { reconciliationEl } from './features/reconciliation'
 
 export const el = {
   'app.name': 'Vibe Budgeting',
@@ -18,6 +19,7 @@ export const el = {
   'nav.income': 'Έσοδα',
   'nav.recurring': 'Επαναλαμβανόμενα',
   'nav.transfers': 'Μεταφορές',
+  'nav.reconciliation': 'Συμφωνία τέλους μήνα',
   'nav.budget': 'Budget',
   'nav.shared': 'Κοινά έξοδα',
   'nav.reports': 'Αναφορές',
@@ -173,6 +175,7 @@ export const el = {
   'more.recurringHint': 'Έξοδα και έσοδα που επαναλαμβάνονται',
   'more.sharedHint': 'Έξοδα με φίλους και παρέες',
   'more.transfersHint': 'Ανάμεσα στους λογαριασμούς σου',
+  'more.reconciliationHint': 'Ταίριαξε τα πραγματικά υπόλοιπα',
 
   // Quick add (sample until the expenses feature replaces it)
   'quickAdd.newExpense': 'Νέο έξοδο',
@@ -187,6 +190,7 @@ export const el = {
   ...planningEl,
   ...sharedEl,
   ...insightsEl,
+  ...reconciliationEl,
 } as const
 
 export type MessageKey = keyof typeof el

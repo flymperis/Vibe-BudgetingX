@@ -52,6 +52,10 @@ export const routes: RouteObject[] = [
               { path: 'income', lazy: page(() => import('@/features/income/IncomePage')) },
               { path: 'recurring', lazy: page(() => import('@/features/recurring/RecurringPage')) },
               { path: 'transfers', lazy: page(() => import('@/features/transfers/TransfersPage')) },
+              {
+                path: 'reconciliation',
+                lazy: page(() => import('@/features/reconciliation/ReconciliationPage')),
+              },
               { path: 'budget', lazy: page(() => import('@/features/budget/BudgetPage')) },
               { path: 'shared', lazy: page(() => import('@/features/shared/SharedPage')) },
               {
